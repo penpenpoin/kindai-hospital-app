@@ -1,0 +1,1405 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#003B6D">
+<title>スマート病院通院ナビ｜近畿大学病院（プロトタイプ）</title>
+<meta name="description" content="近畿大学病院 患者向け通院支援アプリ「スマート病院通院ナビ」コンテスト提出用プロトタイプ">
+
+<!-- ===== 外部CDN（Google Fonts / Font Awesome） ===== -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+<style>
+/* =========================================================
+   カラートークン
+   ・濃紺（近大ブルー #003B6D）＝ヘッダー／信頼感
+   ・明るいブルー（#0066CC）＝アクション／視認性
+   ========================================================= */
+:root{
+  --navy:#003B6D;
+  --navy-deep:#00294C;
+  --blue:#0066CC;
+  --blue-dark:#0052A6;
+  --line-blue:#0091FF;   /* 院内の「青いライン」ナビ用 */
+  --sky:#E7F1FC;
+  --bg:#EDF2F7;
+  --card:#FFFFFF;
+  --text:#12212E;
+  --muted:#5C6F80;
+  --border:#DCE5EE;
+  --ok:#0E8A4F;   --ok-bg:#E3F5EB;
+  --amber:#A45C00; --amber-bg:#FFF3DF;
+  --warn:#C62424;  --warn-bg:#FDEBEA;
+  --radius:18px;
+  --shadow:0 6px 20px rgba(0,59,109,.10);
+  --tap:64px;              /* 高齢者向け：ボタン最小高さ */
+  --bar-h:104px;           /* 審査員用シミュレーションバーの高さ */
+}
+
+/* かんたんモード時はルートの文字サイズ自体を拡大（全体が連動して大きくなる） */
+html{font-size:16px;}
+html.easy{font-size:19.5px;}
+html.easy .detail{display:none !important;}          /* 情報量を削る */
+html.easy .nav-btn{min-height:128px;}
+html.easy .guide-sub{font-size:1.05rem;}
+
+*{box-sizing:border-box;}
+body{
+  margin:0;
+  font-family:"Noto Sans JP",system-ui,-apple-system,"Hiragino Kaku Gothic ProN",sans-serif;
+  background:#DDE4EC;
+  color:var(--text);
+  line-height:1.7;
+  -webkit-text-size-adjust:100%;
+}
+button{font-family:inherit;cursor:pointer;}
+:focus-visible{outline:3px solid #FFB200;outline-offset:2px;}
+@media (prefers-reduced-motion:reduce){*{animation:none !important;transition:none !important;}}
+
+/* ===== アプリ全体（モバイルファースト／最大480pxで中央寄せ） ===== */
+.app{
+  max-width:480px;margin:0 auto;min-height:100vh;background:var(--bg);
+  box-shadow:0 0 40px rgba(0,30,60,.18);position:relative;overflow-x:hidden;
+  padding-bottom:calc(var(--bar-h) + 24px);
+}
+
+/* ===== A. ヘッダー ===== */
+.app-header{
+  position:sticky;top:0;z-index:40;
+  background:linear-gradient(180deg,var(--navy) 0%,var(--navy-deep) 100%);
+  color:#fff;padding:.7rem .85rem .85rem;
+}
+.brand{display:flex;align-items:center;gap:.6rem;}
+.brand i{font-size:1.5rem;color:#8FC6F5;}
+.brand-sub{font-size:.7rem;letter-spacing:.08em;color:#A9CCEC;line-height:1.2;}
+.brand-title{font-size:1.12rem;font-weight:900;letter-spacing:.02em;line-height:1.3;}
+.header-controls{display:flex;gap:.45rem;margin-top:.7rem;align-items:stretch;}
+
+/* 家族切替ドロップダウン */
+.user-select{
+  flex:1 1 auto;display:flex;align-items:center;gap:.45rem;min-width:0;
+  background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.3);
+  border-radius:12px;padding:.35rem .6rem;
+}
+.user-select i{color:#9FD0FF;font-size:.95rem;}
+.user-select select{
+  flex:1;min-width:0;background:transparent;border:0;color:#fff;
+  font-size:.95rem;font-weight:700;font-family:inherit;padding:.3rem 0;
+}
+.user-select select option{color:#12212E;}
+.hbtn{
+  border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.1);color:#fff;
+  border-radius:12px;padding:.35rem .6rem;font-size:.8rem;font-weight:700;line-height:1.25;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.1rem;min-width:62px;
+}
+.hbtn i{font-size:1rem;}
+.hbtn.on{background:#FFD24A;border-color:#FFD24A;color:#4A3200;}
+
+/* ===== 通知バナー（未精算アラートなど） ===== */
+.alert-zone{padding:0 .85rem;}
+.alert-banner{
+  display:flex;gap:.6rem;align-items:flex-start;
+  background:var(--warn);color:#fff;border-radius:14px;padding:.8rem .9rem;margin-top:.85rem;
+  box-shadow:0 6px 18px rgba(198,36,36,.3);animation:pulse 1.4s ease-in-out infinite;
+}
+.alert-banner i{font-size:1.35rem;margin-top:.1rem;}
+.alert-banner b{display:block;font-size:1.05rem;}
+.alert-banner span{font-size:.88rem;opacity:.95;}
+@keyframes pulse{0%,100%{box-shadow:0 6px 18px rgba(198,36,36,.28);}50%{box-shadow:0 6px 26px rgba(198,36,36,.65);}}
+
+/* ===== 共通カード ===== */
+main{padding:.85rem;display:flex;flex-direction:column;gap:.9rem;}
+.card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;}
+.card-head{
+  display:flex;align-items:center;gap:.55rem;padding:.85rem 1rem;
+  border-bottom:1px solid var(--border);
+}
+.card-head i{color:var(--blue);font-size:1.15rem;}
+.card-head h2{margin:0;font-size:1.05rem;font-weight:900;}
+.card-body{padding:1rem;}
+
+/* ===== B. 本日の受診ガイド（動的カード） ===== */
+.guide{
+  background:var(--card);border-radius:22px;box-shadow:0 10px 26px rgba(0,59,109,.16);
+  border-top:6px solid var(--blue);overflow:hidden;
+}
+.guide.is-warn{border-top-color:var(--warn);}
+.guide.is-ok{border-top-color:var(--ok);}
+.guide-top{padding:.9rem 1rem .2rem;}
+.chip{
+  display:inline-flex;align-items:center;gap:.4rem;background:var(--sky);color:var(--navy);
+  font-size:.82rem;font-weight:700;border-radius:999px;padding:.25rem .75rem;
+}
+.guide.is-warn .chip{background:var(--warn-bg);color:var(--warn);}
+.guide.is-ok .chip{background:var(--ok-bg);color:var(--ok);}
+.guide-title{font-size:1.45rem;font-weight:900;line-height:1.4;margin:.55rem 0 .2rem;letter-spacing:.01em;}
+.guide-sub{color:var(--muted);font-size:.95rem;margin:0 0 .3rem;}
+
+/* 進行ステップ（実際に順番のある工程なので番号表示を使用） */
+.steps{display:flex;gap:.25rem;padding:.7rem 1rem 0;}
+.step{flex:1;text-align:center;font-size:.68rem;color:#93A4B3;font-weight:700;}
+.step .dot{
+  height:7px;border-radius:99px;background:#E1E8EF;margin-bottom:.3rem;
+}
+.step.done .dot{background:#9CC9F2;}
+.step.now .dot{background:var(--blue);}
+.step.now{color:var(--blue);}
+.guide.is-warn .step.now .dot{background:var(--warn);}
+.guide.is-warn .step.now{color:var(--warn);}
+
+/* ダイナミック・ルーティング案内（目玉機能） */
+.route{
+  margin:.9rem 1rem;border-radius:16px;background:linear-gradient(135deg,#F2F8FF,#E4F0FE);
+  border:1px solid #C9E0F7;padding:.9rem;
+}
+.route-tag{display:flex;align-items:center;gap:.4rem;font-size:.8rem;font-weight:800;color:var(--blue-dark);}
+.route-tag .ai{background:var(--blue);color:#fff;border-radius:6px;padding:.05rem .4rem;font-size:.7rem;}
+.route-main{font-size:1.15rem;font-weight:900;line-height:1.5;margin:.45rem 0 .1rem;}
+.route-main em{font-style:normal;background:linear-gradient(transparent 62%,#FFE07A 62%);padding:0 .1rem;}
+.route-why{font-size:.88rem;color:var(--muted);margin:.25rem 0 0;}
+.route-wait{
+  display:inline-flex;align-items:center;gap:.35rem;margin-top:.55rem;background:var(--ok-bg);color:var(--ok);
+  font-weight:800;border-radius:999px;padding:.2rem .7rem;font-size:.9rem;
+}
+
+/* 青いライン案内 */
+.bluelane{display:flex;align-items:center;gap:.6rem;margin-top:.75rem;background:#fff;border-radius:12px;padding:.6rem .7rem;border:1px solid #D7E7F8;}
+.lane-bar{flex:1;height:14px;border-radius:99px;background:repeating-linear-gradient(90deg,var(--line-blue) 0 22px,#7FC6FF 22px 34px);position:relative;overflow:hidden;}
+.lane-bar::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.85),transparent);width:60px;animation:flow 1.8s linear infinite;}
+@keyframes flow{from{transform:translateX(-70px);}to{transform:translateX(320px);}}
+.bluelane span{font-size:.9rem;font-weight:800;color:var(--blue-dark);white-space:nowrap;}
+
+/* ステータス行 */
+.status-row{display:flex;gap:.6rem;padding:0 1rem 1rem;}
+.status-box{flex:1;background:#F5F8FB;border:1px solid var(--border);border-radius:14px;padding:.6rem .7rem;text-align:center;}
+.status-box .k{font-size:.75rem;color:var(--muted);font-weight:700;}
+.status-box .v{font-size:1.3rem;font-weight:900;color:var(--navy);line-height:1.3;}
+.status-box .v small{font-size:.8rem;font-weight:700;}
+.live{display:inline-block;width:8px;height:8px;border-radius:99px;background:#E53935;margin-right:.3rem;animation:blink 1.2s infinite;}
+@keyframes blink{50%{opacity:.25;}}
+
+/* ガイド内のアクションボタン */
+.guide-actions{display:flex;flex-direction:column;gap:.55rem;padding:0 1rem 1.1rem;}
+
+/* ===== ボタン ===== */
+.btn{
+  display:flex;align-items:center;justify-content:center;gap:.5rem;
+  min-height:var(--tap);border-radius:14px;border:0;font-size:1.05rem;font-weight:800;
+  padding:.7rem 1rem;transition:transform .12s ease,filter .12s ease;
+}
+.btn:active{transform:scale(.98);}
+.btn-primary{background:var(--blue);color:#fff;box-shadow:0 4px 12px rgba(0,102,204,.28);}
+.btn-navy{background:var(--navy);color:#fff;}
+.btn-ghost{background:#fff;color:var(--blue-dark);border:2px solid var(--blue);}
+.btn-warn{background:var(--warn);color:#fff;box-shadow:0 4px 14px rgba(198,36,36,.3);}
+.btn-dark{background:#111;color:#fff;}
+.btn-sm{min-height:46px;font-size:.92rem;padding:.4rem .9rem;border-radius:12px;}
+
+/* ===== C. メイン4ボタン ===== */
+.main-nav{display:grid;grid-template-columns:1fr 1fr;gap:.7rem;}
+.nav-btn{
+  min-height:112px;border-radius:18px;border:2px solid transparent;background:var(--card);
+  box-shadow:var(--shadow);padding:.8rem .6rem;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:.3rem;text-align:center;color:var(--text);
+  transition:transform .12s ease;
+}
+.nav-btn:active{transform:scale(.97);}
+.nav-btn i{font-size:1.75rem;color:var(--blue);}
+.nav-btn .t{font-size:1rem;font-weight:900;line-height:1.35;}
+.nav-btn .s{font-size:.75rem;color:var(--muted);line-height:1.3;}
+.nav-btn.active{border-color:var(--blue);background:var(--sky);}
+.nav-btn.active i{color:var(--navy);}
+.nav-btn .badge{
+  position:absolute;top:8px;right:10px;background:var(--warn);color:#fff;font-size:.7rem;
+  font-weight:800;border-radius:99px;padding:0 .45rem;
+}
+.nav-btn{position:relative;}
+
+/* ===== 各ビュー ===== */
+.view{display:none;}
+.view.active{display:block;animation:rise .22s ease-out;}
+@keyframes rise{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+
+/* リスト表示 */
+.list{list-style:none;margin:0;padding:0;}
+.list li{display:flex;align-items:center;gap:.7rem;padding:.75rem 1rem;border-bottom:1px solid var(--border);}
+.list li:last-child{border-bottom:0;}
+.list .ico{width:38px;height:38px;border-radius:11px;background:var(--sky);color:var(--navy);display:grid;place-items:center;flex:none;}
+.list .main{flex:1;min-width:0;}
+.list .name{font-weight:800;font-size:1rem;}
+.list .meta{font-size:.82rem;color:var(--muted);}
+.pill{border-radius:999px;padding:.15rem .6rem;font-size:.82rem;font-weight:800;white-space:nowrap;}
+.pill.ok{background:var(--ok-bg);color:var(--ok);}
+.pill.mid{background:var(--amber-bg);color:var(--amber);}
+.pill.busy{background:var(--warn-bg);color:var(--warn);}
+
+/* バーコード */
+.ticket{background:linear-gradient(160deg,var(--navy),#075594);color:#fff;border-radius:18px;padding:1rem;text-align:center;}
+.ticket .who{font-size:.85rem;color:#B6D8F6;}
+.ticket .line{font-size:1.15rem;font-weight:900;margin:.15rem 0 .7rem;}
+.barcode{background:#fff;border-radius:12px;padding:.9rem .7rem .5rem;}
+.bars{display:flex;align-items:flex-end;justify-content:center;gap:2px;height:70px;}
+.bars span{background:#111;width:3px;height:100%;}
+.barcode .num{font-size:.85rem;letter-spacing:.28em;color:#333;margin-top:.4rem;font-weight:700;}
+.ticket .note{font-size:.82rem;color:#CFE6FA;margin-top:.6rem;}
+
+/* 入力系 */
+label.field{display:block;margin-bottom:.7rem;}
+label.field .lb{font-weight:800;font-size:.92rem;display:block;margin-bottom:.25rem;}
+select.inp,input.inp,textarea.inp{
+  width:100%;border:2px solid var(--border);border-radius:12px;padding:.7rem;font-size:1rem;
+  font-family:inherit;background:#fff;color:var(--text);
+}
+textarea.inp{min-height:104px;resize:vertical;line-height:1.6;}
+
+.note{background:var(--sky);border-left:5px solid var(--blue);border-radius:10px;padding:.7rem .8rem;font-size:.88rem;color:#0B3C68;}
+.note.warn{background:var(--warn-bg);border-left-color:var(--warn);color:#7A1A1A;}
+.note.ok{background:var(--ok-bg);border-left-color:var(--ok);color:#0B5A36;}
+
+/* 残高 */
+.balance{background:linear-gradient(135deg,#0A5FAE,#003B6D);color:#fff;border-radius:16px;padding:1rem;}
+.balance .k{font-size:.85rem;color:#B9D9F5;}
+.balance .v{font-size:2.2rem;font-weight:900;letter-spacing:.02em;}
+.chips{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.7rem;}
+.chip-btn{border:2px solid rgba(255,255,255,.55);background:rgba(255,255,255,.12);color:#fff;border-radius:999px;padding:.45rem .85rem;font-weight:800;font-size:.95rem;}
+
+/* トグルスイッチ */
+.switch-row{display:flex;align-items:center;gap:.8rem;padding:.9rem 1rem;border-bottom:1px solid var(--border);}
+.switch{width:62px;height:34px;border-radius:99px;background:#C9D4DE;border:0;position:relative;flex:none;transition:background .2s;}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:28px;height:28px;border-radius:99px;background:#fff;transition:transform .2s;box-shadow:0 2px 5px rgba(0,0,0,.25);}
+.switch.on{background:var(--ok);}
+.switch.on::after{transform:translateX(28px);}
+
+/* SNS投稿 */
+.post{padding:.9rem 1rem;border-bottom:1px solid var(--border);}
+.post:last-child{border-bottom:0;}
+.post-head{display:flex;align-items:center;gap:.55rem;}
+.avatar{width:40px;height:40px;border-radius:99px;display:grid;place-items:center;color:#fff;font-weight:900;flex:none;}
+.post-name{font-weight:800;font-size:.95rem;line-height:1.2;}
+.post-meta{font-size:.75rem;color:var(--muted);}
+.tag{font-size:.7rem;font-weight:800;border-radius:6px;padding:.05rem .4rem;margin-left:.3rem;}
+.tag.md{background:var(--ok-bg);color:var(--ok);}
+.tag.tr{background:#EFE7FB;color:#5B32A8;}
+.post-body{font-size:.95rem;margin:.55rem 0 .4rem;}
+.post-acts{display:flex;gap:.9rem;font-size:.85rem;color:var(--muted);}
+.like{background:none;border:0;color:var(--muted);font-weight:700;font-size:.85rem;padding:.2rem;}
+.like.on{color:#D6336C;}
+
+/* ===== D. お助けAIコンシェルジュ（右下固定） ===== */
+.fab-wrap{
+  position:fixed;bottom:calc(var(--bar-h) + 14px);left:50%;transform:translateX(-50%);
+  width:100%;max-width:480px;pointer-events:none;z-index:50;
+  display:flex;justify-content:flex-end;align-items:center;gap:.4rem;padding:0 .85rem;
+}
+.fab-bubble{
+  pointer-events:none;background:#fff;border:2px solid var(--blue);color:var(--blue-dark);
+  font-weight:800;font-size:.85rem;border-radius:14px;padding:.35rem .7rem;box-shadow:var(--shadow);
+  animation:float 2.4s ease-in-out infinite;
+}
+@keyframes float{50%{transform:translateY(-4px);}}
+.fab{
+  pointer-events:auto;width:70px;height:70px;border-radius:99px;border:3px solid #fff;
+  background:radial-gradient(circle at 30% 25%,#2E9BFF,#0052A6);color:#fff;
+  box-shadow:0 8px 22px rgba(0,59,109,.4);display:grid;place-items:center;font-size:1.5rem;
+}
+.fab .mini{position:absolute;}
+
+/* ===== 3. 審査員用シミュレーションバー ===== */
+.simbar{
+  position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;z-index:60;
+  background:#101C27;color:#fff;padding:.45rem .6rem calc(.6rem + env(safe-area-inset-bottom));
+  box-shadow:0 -6px 20px rgba(0,0,0,.3);
+}
+.simbar h3{margin:0 0 .35rem;font-size:.72rem;font-weight:700;color:#8FA6BA;display:flex;align-items:center;gap:.35rem;}
+.sim-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.35rem;}
+.sim-btn{
+  background:#1E2F3E;border:1px solid #33475A;color:#CFE0EE;border-radius:11px;padding:.4rem .2rem;
+  font-size:.68rem;font-weight:700;line-height:1.25;display:flex;flex-direction:column;align-items:center;gap:.15rem;min-height:56px;justify-content:center;
+}
+.sim-btn i{font-size:.95rem;}
+.sim-btn.active{background:var(--blue);border-color:#6FB6FF;color:#fff;}
+.sim-btn.danger.active{background:var(--warn);border-color:#FF8A8A;}
+
+/* ===== モーダル共通 ===== */
+.modal{
+  position:fixed;inset:0;z-index:100;display:none;justify-content:center;align-items:flex-end;
+  background:rgba(8,22,36,.55);backdrop-filter:blur(2px);
+}
+.modal.open{display:flex;}
+.sheet{
+  width:100%;max-width:480px;background:var(--bg);border-radius:22px 22px 0 0;max-height:88vh;
+  display:flex;flex-direction:column;animation:up .25s ease-out;
+}
+@keyframes up{from{transform:translateY(24px);opacity:.5;}to{transform:none;opacity:1;}}
+.sheet-head{display:flex;align-items:center;gap:.6rem;padding:.9rem 1rem;background:var(--navy);color:#fff;border-radius:22px 22px 0 0;}
+.sheet-head h2{margin:0;font-size:1.05rem;font-weight:900;flex:1;}
+.close-btn{background:rgba(255,255,255,.16);border:0;color:#fff;width:40px;height:40px;border-radius:99px;font-size:1.1rem;}
+.sheet-body{padding:1rem;overflow-y:auto;}
+
+/* チャット */
+.chat{flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:.7rem;background:var(--bg);min-height:220px;}
+.msg{max-width:84%;padding:.7rem .9rem;border-radius:16px;font-size:1rem;line-height:1.65;}
+.msg.ai{background:#fff;border:1px solid var(--border);border-bottom-left-radius:4px;align-self:flex-start;box-shadow:0 2px 8px rgba(0,59,109,.06);}
+.msg.me{background:var(--blue);color:#fff;border-bottom-right-radius:4px;align-self:flex-end;}
+.msg .speak{display:flex;align-items:center;gap:.35rem;font-size:.75rem;color:var(--blue-dark);font-weight:800;margin-bottom:.25rem;}
+.typing span{display:inline-block;width:8px;height:8px;background:#9BB0C2;border-radius:99px;margin-right:4px;animation:bounce 1s infinite;}
+.typing span:nth-child(2){animation-delay:.15s;}
+.typing span:nth-child(3){animation-delay:.3s;}
+@keyframes bounce{50%{transform:translateY(-6px);}}
+.quick{display:flex;gap:.4rem;flex-wrap:wrap;padding:.6rem .8rem 0;background:#fff;border-top:1px solid var(--border);}
+.quick button{background:var(--sky);border:2px solid #BFDCF8;color:var(--navy);border-radius:999px;padding:.45rem .8rem;font-size:.9rem;font-weight:800;}
+.chat-foot{display:flex;align-items:center;gap:.6rem;padding:.7rem .8rem calc(.8rem + env(safe-area-inset-bottom));background:#fff;}
+.mic{
+  width:64px;height:64px;border-radius:99px;border:0;background:var(--blue);color:#fff;font-size:1.4rem;flex:none;
+  box-shadow:0 4px 14px rgba(0,102,204,.35);
+}
+.mic.listening{background:var(--warn);animation:mic 1s infinite;}
+@keyframes mic{0%,100%{box-shadow:0 0 0 0 rgba(198,36,36,.55);}70%{box-shadow:0 0 0 16px rgba(198,36,36,0);}}
+.mic-label{font-size:.95rem;font-weight:800;color:var(--muted);}
+
+/* トースト */
+.toast-zone{position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;z-index:200;padding:.6rem .85rem;pointer-events:none;display:flex;flex-direction:column;gap:.5rem;}
+.toast{
+  background:#0E2233;color:#fff;border-radius:14px;padding:.7rem .9rem;font-size:.92rem;font-weight:700;
+  box-shadow:0 8px 24px rgba(0,0,0,.3);display:flex;gap:.55rem;align-items:flex-start;animation:down .25s ease-out;
+}
+.toast.ok{background:#0E8A4F;}
+.toast.warn{background:var(--warn);}
+@keyframes down{from{transform:translateY(-14px);opacity:0;}to{transform:none;opacity:1;}}
+
+.section-title{font-size:.95rem;font-weight:900;color:var(--navy);margin:.2rem 0 .1rem;}
+.kv{display:flex;justify-content:space-between;gap:.6rem;padding:.5rem 0;border-bottom:1px dashed var(--border);font-size:.95rem;}
+.kv:last-child{border-bottom:0;}
+.kv b{font-weight:900;}
+.spinner{width:22px;height:22px;border:3px solid #CFE0EE;border-top-color:var(--blue);border-radius:99px;animation:spin .8s linear infinite;display:inline-block;vertical-align:-5px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.hide{display:none !important;}
+.center{text-align:center;}
+.mt{margin-top:.8rem;}
+.footer-note{font-size:.72rem;color:#7A8B9A;text-align:center;padding:.4rem 1rem 0;}
+</style>
+</head>
+<body>
+
+<!-- トースト（画面上部の一時通知） -->
+<div class="toast-zone" id="toastZone" aria-live="polite"></div>
+
+<div class="app">
+
+  <!-- =======================================================
+       A. ヘッダー：家族切替 ＋ かんたんモード ＋ 使い方
+       ======================================================= -->
+  <header class="app-header">
+    <div class="brand">
+      <i class="fa-solid fa-house-medical"></i>
+      <div>
+        <div class="brand-sub">近畿大学病院</div>
+        <div class="brand-title">スマート病院通院ナビ</div>
+      </div>
+    </div>
+    <div class="header-controls">
+      <label class="user-select" for="familySelect">
+        <i class="fa-solid fa-user-group" aria-hidden="true"></i>
+        <select id="familySelect" aria-label="診察を受ける人を切り替える">
+          <option value="self">近大 太郎 さん（本人）</option>
+          <option value="mother">近大 花子 さん（母）</option>
+          <option value="son">近大 みなと さん（長男）</option>
+        </select>
+      </label>
+      <button class="hbtn" id="easyToggle" aria-pressed="false">
+        <i class="fa-solid fa-text-height"></i><span>かんたん</span>
+      </button>
+      <button class="hbtn" id="helpBtn">
+        <i class="fa-regular fa-circle-question"></i><span>使い方</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- 未精算などの警告バナーをここに差し込む -->
+  <div class="alert-zone" id="alertZone"></div>
+
+  <main>
+
+    <!-- ===================================================
+         B. 本日の受診ガイド（シミュレーション状態で切り替わる）
+         =================================================== -->
+    <section class="guide" id="guideCard" aria-live="polite"></section>
+
+    <!-- ===================================================
+         C. メインボタン（4つに限定）
+         =================================================== -->
+    <nav class="main-nav" id="mainNav" aria-label="メインメニュー">
+      <button class="nav-btn active" data-view="v1">
+        <i class="fa-solid fa-route"></i>
+        <span class="t" data-easy="きょう やること">本日の受診ガイド</span>
+        <span class="s detail">バス乗降券・待ち状況</span>
+      </button>
+      <button class="nav-btn" data-view="v2">
+        <i class="fa-solid fa-notes-medical"></i>
+        <span class="t" data-easy="よやくの かくにん">予約確認 &amp; AI問診</span>
+        <span class="s detail">24時間仮受付・症状日記</span>
+      </button>
+      <button class="nav-btn" data-view="v3">
+        <i class="fa-solid fa-wallet"></i>
+        <span class="t" data-easy="おかねの はらいかた">お支払い設定</span>
+        <span class="s detail">プリペイド・キャッシュレス</span>
+      </button>
+      <button class="nav-btn" data-view="v4">
+        <i class="fa-solid fa-comment-medical"></i>
+        <span class="t" data-easy="おくすりと なかま">医療SNS &amp; お薬記録</span>
+        <span class="s detail">コミュニティ・処方履歴</span>
+      </button>
+    </nav>
+
+    <!-- =============== ① 受診ガイド＆バス乗降券 =============== -->
+    <section class="view active" id="v1">
+
+      <div class="card">
+        <div class="card-head"><i class="fa-solid fa-bus"></i><h2 data-easy="バスの チケット">自動運転バス 乗降券</h2></div>
+        <div class="card-body">
+          <div class="ticket">
+            <div class="who" id="ticketWho">近大 太郎 さん・医療モビリティ 無料乗車</div>
+            <div class="line">近大病院シャトル 南ルート</div>
+            <div class="barcode">
+              <div class="bars" id="bars"></div>
+              <div class="num">KDU-4821-9073</div>
+            </div>
+            <div class="note">乗車口のリーダーにかざしてください（画面の明るさは自動で最大になります）</div>
+          </div>
+          <div class="note mt detail"><i class="fa-solid fa-circle-info"></i> 家族切替で選んだ人の乗降券が表示されます。付き添いの方は同じ画面で2名分をまとめて表示できます。</div>
+        </div>
+      </div>
+
+      <div class="card mt">
+        <div class="card-head"><i class="fa-solid fa-location-crosshairs"></i><h2 data-easy="いる ばしょを しらせる">位置情報 自動チェックイン</h2></div>
+        <div class="card-body">
+          <p class="detail" style="margin:0 0 .7rem;color:var(--muted);font-size:.92rem;">
+            敷地内のビーコンとGPSで現在地を判定し、診療科の前を通るだけで受付が完了します。受付機に並ぶ必要はありません。
+          </p>
+          <div id="checkinList"></div>
+          <button class="btn btn-primary mt" id="checkinBtn"><i class="fa-solid fa-map-location-dot"></i> 今いる場所でチェックイン</button>
+        </div>
+      </div>
+
+      <div class="card mt">
+        <div class="card-head">
+          <i class="fa-solid fa-hourglass-half"></i>
+          <h2 data-easy="どれくらい まつか">各科・検査・会計の待ち状況</h2>
+          <button class="btn btn-sm btn-ghost" id="refreshWait" style="margin-left:auto;"><i class="fa-solid fa-rotate"></i> 更新</button>
+        </div>
+        <ul class="list" id="waitList"></ul>
+      </div>
+
+      <div class="card mt">
+        <div class="card-head"><i class="fa-solid fa-triangle-exclamation" style="color:var(--warn)"></i><h2 data-easy="はらい わすれ ぼうし">帰り忘れ防止アラート</h2></div>
+        <div class="card-body">
+          <p class="detail" style="margin:0 0 .7rem;color:var(--muted);font-size:.92rem;">
+            会計や薬の受け取りが残ったまま出口ゲートに近づくと、スマホが振動してお知らせします。
+          </p>
+          <button class="btn btn-warn" id="demoAlertBtn"><i class="fa-solid fa-bell"></i> 警告のデモを見る</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- =============== ② 予約確認 & AI問診 =============== -->
+    <section class="view" id="v2">
+      <div class="card">
+        <div class="card-head"><i class="fa-regular fa-calendar-check"></i><h2 data-easy="よやくの よてい">これからの予約</h2></div>
+        <ul class="list" id="apptList"></ul>
+      </div>
+
+      <div class="card mt">
+        <div class="card-head"><i class="fa-solid fa-clock"></i><h2 data-easy="よやくを とる">24時間 仮受付</h2></div>
+        <div class="card-body">
+          <div class="note detail">
+            夜中でも仮受付ができます。受け付けた内容は<b>翌朝6時に自動で本受付</b>になり、順番が確保されます。電話がつながる時間まで待つ必要はありません。
+          </div>
+          <div class="mt" id="tempForm">
+            <label class="field"><span class="lb">診療科</span>
+              <select class="inp" id="deptSel">
+                <option>内科</option><option>整形外科</option><option>皮膚科</option><option>眼科</option><option>耳鼻咽喉科</option>
+              </select>
+            </label>
+            <label class="field"><span class="lb">希望日</span><input class="inp" type="date" id="dateSel"></label>
+            <label class="field"><span class="lb">希望の時間帯</span>
+              <select class="inp" id="timeSel"><option>午前（9:00〜12:00）</option><option>午後（13:30〜16:30）</option></select>
+            </label>
+            <button class="btn btn-primary" id="tempBtn"><i class="fa-solid fa-paper-plane"></i> 仮受付をする</button>
+          </div>
+          <div id="tempResult"></div>
+        </div>
+      </div>
+
+      <div class="card mt">
+        <div class="card-head"><i class="fa-solid fa-wand-magic-sparkles"></i><h2 data-easy="からだの メモ">AI症状日記</h2></div>
+        <div class="card-body">
+          <p class="detail" style="margin:0 0 .6rem;color:var(--muted);font-size:.92rem;">
+            日々のメモを書いておくだけで、AIが受診当日の問診票を自動で作ります。話すのが苦手な方や、症状を説明しづらい方でも伝え漏れがありません。
+          </p>
+          <textarea class="inp" id="diary">10/2 朝起きたとき、右のひざが痛い。階段をおりるときがつらい。
+10/4 夕方に少し腫れてきた。湿布をはったら楽になった。
+10/6 散歩30分で痛みが強くなる。夜はうずいて2回目が覚めた。</textarea>
+          <button class="btn btn-primary mt" id="diaryBtn"><i class="fa-solid fa-file-medical"></i> AIに問診票を作ってもらう</button>
+          <div id="diaryResult"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =============== ③ お支払い設定 =============== -->
+    <section class="view" id="v3">
+      <div class="card">
+        <div class="card-head"><i class="fa-solid fa-credit-card"></i><h2 data-easy="じどうで はらう">らくらく会計（クレジットカード）</h2></div>
+        <div class="switch-row">
+          <button class="switch" id="rakuSwitch" aria-pressed="false" aria-label="らくらく会計の自動精算"></button>
+          <div>
+            <div style="font-weight:800;">診察が終わったら自動で精算</div>
+            <div class="detail" style="font-size:.85rem;color:var(--muted);">会計窓口に寄らず、そのままお帰りいただけます</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="kv"><span>登録カード</span><b>VISA •••• 4821</b></div>
+          <div class="kv detail"><span>上限額</span><b>1回 50,000円</b></div>
+          <div class="note mt" id="rakuNote">自動精算はオフです。会計窓口かアプリでのお支払いが必要です。</div>
+        </div>
+      </div>
+
+      <div class="card mt">
+        <div class="card-head"><i class="fa-solid fa-coins"></i><h2 data-easy="のこりの おかね">病院プリペイド</h2></div>
+        <div class="card-body">
+          <div class="balance">
+            <div class="k" data-easy="のこりの おかね">現在の残高</div>
+            <div class="v" id="balance">¥3,200</div>
+            <div class="chips">
+              <button class="chip-btn" data-charge="3000">+3,000円</button>
+              <button class="chip-btn" data-charge="5000">+5,000円</button>
+              <button class="chip-btn" data-charge="10000">+10,000円</button>
+            </div>
+          </div>
+          <div class="note mt detail">院内の食堂・売店・自動販売機でも使えます。チャージ200円ごとに1ポイント貯まります。</div>
+        </div>
+      </div>
+
+      <div class="card mt">
+        <div class="card-head"><i class="fa-brands fa-apple"></i><h2>Apple Pay ワンタップ決済</h2></div>
+        <div class="card-body">
+          <div class="kv"><span data-easy="きょうの おかね">本日の請求</span><b id="dueAmount">¥2,340</b></div>
+          <button class="btn btn-dark mt" id="applePayBtn"><i class="fa-brands fa-apple"></i> Apple Pay で支払う</button>
+          <div id="payResult"></div>
+        </div>
+      </div>
+
+      <div class="card mt">
+        <div class="card-head"><i class="fa-solid fa-receipt"></i><h2 data-easy="はらった きろく">お支払い履歴</h2></div>
+        <ul class="list" id="payHistory"></ul>
+      </div>
+    </section>
+
+    <!-- =============== ④ 医療SNS & お薬・カルテ =============== -->
+    <section class="view" id="v4">
+      <div class="card">
+        <div class="card-head"><i class="fa-solid fa-earth-asia"></i><h2 data-easy="おなじ びょうきの なかま">医療SNSコミュニティ</h2></div>
+        <div class="card-body" style="padding-bottom:.4rem;">
+          <div class="note detail"><i class="fa-solid fa-user-doctor"></i> 近畿大学病院の医師が内容を監修。誤った健康情報は表示されません。海外の投稿は自動翻訳されます。</div>
+        </div>
+        <div id="feed"></div>
+      </div>
+
+      <div class="card mt">
+        <div class="card-head"><i class="fa-solid fa-pills"></i><h2 data-easy="のむ おくすり">今のお薬</h2></div>
+        <ul class="list" id="medList"></ul>
+      </div>
+
+      <div class="card mt">
+        <div class="card-head"><i class="fa-solid fa-file-waveform"></i><h2 data-easy="びょういんに きた きろく">受診履歴</h2></div>
+        <ul class="list" id="historyList"></ul>
+      </div>
+
+      <div class="card mt">
+        <div class="card-head"><i class="fa-solid fa-triangle-exclamation" style="color:var(--warn)"></i><h2 data-easy="からだに あわない もの">アレルギー・注意情報</h2></div>
+        <div class="card-body">
+          <div class="note warn">
+            <b>ペニシリン系抗菌薬</b>：発疹の既往あり<br>
+            <b>そば</b>：じんましん<br>
+            <span class="detail">救急時はロック画面からこの情報を医療者に提示できます。</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <p class="footer-note">これはコンテスト提出用のデモです。表示している待ち時間・金額・投稿はすべてサンプルです。</p>
+  </main>
+</div>
+
+<!-- =======================================================
+     D. お助けAIコンシェルジュ（右下固定）
+     ======================================================= -->
+<div class="fab-wrap">
+  <div class="fab-bubble" id="fabBubble">困ったらタップ！</div>
+  <button class="fab" id="fabBtn" aria-label="お助けAIコンシェルジュを開く">
+    <i class="fa-solid fa-headset"></i>
+  </button>
+</div>
+
+<!-- 審査員用シミュレーションバー -->
+<div class="simbar">
+  <h3><i class="fa-solid fa-sliders"></i> 審査員用シミュレーション（状態を切り替えて体験できます）</h3>
+  <div class="sim-grid">
+    <button class="sim-btn active" data-step="home"><i class="fa-solid fa-bus"></i>1. 自宅・バス移動</button>
+    <button class="sim-btn" data-step="arrive"><i class="fa-solid fa-hospital"></i>2. 到着・最適ルート</button>
+    <button class="sim-btn" data-step="checkout"><i class="fa-solid fa-yen-sign"></i>3. 会計・帰宅</button>
+    <button class="sim-btn danger" data-step="unpaid"><i class="fa-solid fa-triangle-exclamation"></i>4. 未精算で出口へ</button>
+  </div>
+</div>
+
+<!-- AIコンシェルジュ モーダル -->
+<div class="modal" id="aiModal" role="dialog" aria-modal="true" aria-label="お助けAIコンシェルジュ">
+  <div class="sheet" style="height:82vh;">
+    <div class="sheet-head">
+      <i class="fa-solid fa-headset"></i>
+      <h2>お助けAIコンシェルジュ</h2>
+      <button class="close-btn" data-close="aiModal" aria-label="閉じる"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="chat" id="chat"></div>
+    <div class="quick" id="quick">
+      <button>次どこに行けばいい？</button>
+      <button>支払いのやり方は？</button>
+      <button>待ち時間はどれくらい？</button>
+      <button>バスの乗り方は？</button>
+      <button>薬はどこでもらう？</button>
+    </div>
+    <div class="chat-foot">
+      <button class="mic" id="micBtn" aria-label="音声で質問する"><i class="fa-solid fa-microphone"></i></button>
+      <span class="mic-label" id="micLabel">マイクを押して話しかけてください</span>
+    </div>
+  </div>
+</div>
+
+<!-- 使い方モーダル -->
+<div class="modal" id="helpModal" role="dialog" aria-modal="true" aria-label="使い方">
+  <div class="sheet">
+    <div class="sheet-head">
+      <i class="fa-regular fa-circle-question"></i><h2>このアプリの使い方</h2>
+      <button class="close-btn" data-close="helpModal" aria-label="閉じる"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="sheet-body">
+      <div class="card"><ul class="list">
+        <li><div class="ico"><b>1</b></div><div class="main"><div class="name">家でバスを待つ</div><div class="meta">乗降券のバーコードを見せるだけで乗れます</div></div></li>
+        <li><div class="ico"><b>2</b></div><div class="main"><div class="name">病院に着く</div><div class="meta">歩くだけで受付が終わります（自動チェックイン）</div></div></li>
+        <li><div class="ico"><b>3</b></div><div class="main"><div class="name">画面のとおりに進む</div><div class="meta">空いている検査から順にご案内します</div></div></li>
+        <li><div class="ico"><b>4</b></div><div class="main"><div class="name">会計はスマホで</div><div class="meta">窓口に並ばずお支払いできます</div></div></li>
+      </ul></div>
+      <div class="note mt"><i class="fa-solid fa-text-height"></i> 画面の文字が小さいときは、上の「かんたん」ボタンを押してください。文字が大きくなり、表示もやさしい言葉になります。</div>
+      <div class="note mt"><i class="fa-solid fa-headset"></i> 困ったときは右下の青いボタンを押してください。話しかけるだけで答えます。</div>
+      <button class="btn btn-primary mt" data-close="helpModal">とじる</button>
+    </div>
+  </div>
+</div>
+
+<!-- 汎用モーダル（乗降券の拡大、ルート表示など） -->
+<div class="modal" id="genModal" role="dialog" aria-modal="true">
+  <div class="sheet">
+    <div class="sheet-head"><i class="fa-solid fa-circle-info"></i><h2 id="genTitle">案内</h2>
+      <button class="close-btn" data-close="genModal" aria-label="閉じる"><i class="fa-solid fa-xmark"></i></button></div>
+    <div class="sheet-body" id="genBody"></div>
+  </div>
+</div>
+
+<script>
+/* =========================================================================
+   スマート病院通院ナビ ― デモ用スクリプト
+   すべてフロントエンドのみで動作します（サーバー通信はありません）
+   ========================================================================= */
+
+/* ---------- アプリの状態 ---------- */
+const state = {
+  step: 'home',        // home / arrive / checkout / unpaid
+  easy: false,         // かんたんモード
+  paid: false,         // 本日の会計が済んでいるか
+  raku: false,         // らくらく会計（自動精算）の設定
+  balance: 3200,       // プリペイド残高
+  due: 2340,           // 本日の請求額
+  user: '近大 太郎',
+};
+
+/* ---------- 待ち状況のサンプルデータ ---------- */
+let waits = [
+  {id:'naika', name:'内科 診察', easy:'ないかの しんさつ', place:'3階 A受付', people:2, min:10, icon:'fa-stethoscope'},
+  {id:'blood', name:'中央検査部（採血）', easy:'けつえきを とる へや', place:'1階', people:12, min:35, icon:'fa-droplet'},
+  {id:'xray',  name:'放射線部（レントゲン）', easy:'レントゲンの へや', place:'2階', people:1, min:3, icon:'fa-x-ray'},
+  {id:'kaikei',name:'会計', easy:'おかねを はらう ところ', place:'1階 中央', people:3, min:5, icon:'fa-yen-sign'},
+  {id:'kusuri',name:'院内薬局', easy:'おくすりを もらう ところ', place:'1階 西', people:5, min:8, icon:'fa-pills'},
+];
+
+/* =========================================================================
+   小さなユーティリティ
+   ========================================================================= */
+const $  = (s,r=document)=>r.querySelector(s);
+const $$ = (s,r=document)=>Array.from(r.querySelectorAll(s));
+const yen = n => '¥' + n.toLocaleString('ja-JP');
+
+/** 画面上部にトーストを表示する */
+function toast(text, type='', ms=3600){
+  const el = document.createElement('div');
+  el.className = 'toast ' + type;
+  const icon = type==='warn' ? 'fa-triangle-exclamation' : type==='ok' ? 'fa-circle-check' : 'fa-circle-info';
+  el.innerHTML = `<i class="fa-solid ${icon}"></i><div>${text}</div>`;
+  $('#toastZone').appendChild(el);
+  setTimeout(()=>{ el.style.opacity='0'; el.style.transition='opacity .4s'; setTimeout(()=>el.remove(),400); }, ms);
+}
+
+/** 混雑度に応じたバッジを返す */
+function waitPill(w){
+  const cls = w.min <= 5 ? 'ok' : w.min <= 15 ? 'mid' : 'busy';
+  const label = w.min <= 5 ? '空いています' : w.min <= 15 ? 'ふつう' : '混雑中';
+  return `<span class="pill ${cls}">${label} 約${w.min}分</span>`;
+}
+
+/* =========================================================================
+   かんたんモード
+   ・ルートの文字サイズを拡大
+   ・.detail の補足情報を隠して情報量を減らす
+   ・data-easy を持つ要素の文言をやさしい日本語に入れ替える
+   ========================================================================= */
+function applyEasyText(root=document){
+  $$('[data-easy]', root).forEach(el=>{
+    if(el.dataset.normal === undefined) el.dataset.normal = el.textContent;
+    el.textContent = state.easy ? el.dataset.easy : el.dataset.normal;
+  });
+}
+function toggleEasy(){
+  state.easy = !state.easy;
+  document.documentElement.classList.toggle('easy', state.easy);
+  const btn = $('#easyToggle');
+  btn.classList.toggle('on', state.easy);
+  btn.setAttribute('aria-pressed', String(state.easy));
+  renderAll();
+  toast(state.easy ? '文字を大きくして、やさしい言葉に変えました' : '通常の表示に戻しました', 'ok', 2600);
+}
+
+/* =========================================================================
+   B. 本日の受診ガイド（動的カード）
+   シミュレーションバーの状態に応じて中身をまるごと切り替える
+   ========================================================================= */
+function stepper(activeIndex, warn=false){
+  const labels = ['移動','受付・検査','診察','会計・帰宅'];
+  return `<div class="steps">` + labels.map((l,i)=>{
+    const cls = i < activeIndex ? 'done' : i === activeIndex ? 'now' : '';
+    return `<div class="step ${cls}"><div class="dot"></div>${l}</div>`;
+  }).join('') + `</div>`;
+}
+
+function renderGuide(){
+  const g = $('#guideCard');
+  g.className = 'guide';
+  let html = '';
+
+  /* ---------- 1. 自宅・バス移動 ---------- */
+  if(state.step === 'home'){
+    html = `
+      ${stepper(0)}
+      <div class="guide-top">
+        <span class="chip"><i class="fa-solid fa-bus"></i> 今は 自宅・移動中</span>
+        <h1 class="guide-title" data-easy="バスに のって びょういんへ">自動運転バスで病院へ向かいます</h1>
+        <p class="guide-sub">本日 9:30 内科（3階 A受付）の予約があります。</p>
+      </div>
+      <div class="route">
+        <div class="route-tag"><span class="ai">AI</span> 出発時刻のお知らせ</div>
+        <p class="route-main">次のバスは <em>8:52</em> に お迎えに来ます</p>
+        <p class="route-why">道路が空いているため、いつもより3分早く到着する見込みです。玄関でお待ちください。</p>
+        <span class="route-wait"><i class="fa-solid fa-clock"></i> 病院まで 約12分</span>
+      </div>
+      <div class="status-row">
+        <div class="status-box"><div class="k" data-easy="のる バス">乗車バス</div><div class="v">南ルート<small> 便</small></div></div>
+        <div class="status-box"><div class="k" data-easy="おかね">運賃</div><div class="v">無料<small>（通院支援）</small></div></div>
+      </div>
+      <div class="guide-actions">
+        <button class="btn btn-primary" data-act="ticket"><i class="fa-solid fa-barcode"></i> 乗降券を大きく表示</button>
+        <button class="btn btn-ghost detail" data-act="go-v2"><i class="fa-regular fa-calendar-check"></i> 今日の予約を確認する</button>
+      </div>`;
+  }
+
+  /* ---------- 2. 病院到着・最適ルート（目玉機能） ---------- */
+  if(state.step === 'arrive'){
+    html = `
+      ${stepper(1)}
+      <div class="guide-top">
+        <span class="chip"><i class="fa-solid fa-location-dot"></i> 病院に到着・受付ずみ</span>
+        <h1 class="guide-title" data-easy="さきに レントゲンへ いきましょう">先に レントゲンへ お進みください</h1>
+        <p class="guide-sub">正面玄関で自動チェックインが完了しました。受付機に並ぶ必要はありません。</p>
+      </div>
+      <div class="route">
+        <div class="route-tag"><span class="ai">AI</span> 空き状況から順番を組み替えました</div>
+        <p class="route-main"><em>採血が混雑中</em>のため、先に<br><em>2階 放射線部（レントゲン）</em>へお進みください</p>
+        <p class="route-why detail">採血は現在12人待ち（約35分）。レントゲンを先に済ませると、合計の滞在時間が約28分短くなります。</p>
+        <span class="route-wait"><i class="fa-solid fa-person-walking"></i> レントゲンの待ち時間 約3分</span>
+        <div class="bluelane">
+          <span data-easy="あおい せんの とおりに">青色のラインに沿って</span>
+          <div class="lane-bar"></div>
+          <span>2階へ</span>
+        </div>
+      </div>
+      <div class="status-row">
+        <div class="status-box"><div class="k"><span class="live"></span><span data-easy="しんさつ">内科 診察</span></div><div class="v">あと2人<small>・約10分</small></div></div>
+        <div class="status-box"><div class="k" data-easy="つぎに いく ところ">次の場所</div><div class="v">2階<small> 放射線部</small></div></div>
+      </div>
+      <div class="guide-actions">
+        <button class="btn btn-primary" data-act="route"><i class="fa-solid fa-diagram-project"></i> 院内ルートを見る</button>
+        <button class="btn btn-ghost detail" data-act="go-v1"><i class="fa-solid fa-hourglass-half"></i> すべての待ち状況を見る</button>
+      </div>`;
+  }
+
+  /* ---------- 3. 会計・帰宅 ---------- */
+  if(state.step === 'checkout'){
+    g.className = 'guide is-ok';
+    const payLine = state.paid
+      ? `<p class="route-main"><em>お支払いは完了しています</em></p>
+         <p class="route-why">窓口に寄らずそのままお帰りいただけます。領収書はアプリに保存されました。</p>`
+      : `<p class="route-main">本日のお会計 <em>${yen(state.due)}</em></p>
+         <p class="route-why">下のボタンからスマホでお支払いできます。会計窓口に並ぶ必要はありません。</p>`;
+    html = `
+      ${stepper(3)}
+      <div class="guide-top">
+        <span class="chip"><i class="fa-solid fa-circle-check"></i> 診察が終わりました</span>
+        <h1 class="guide-title" data-easy="おくすりを うけとって かえりましょう">お薬を受け取ってお帰りください</h1>
+        <p class="guide-sub">1階 西「院内薬局」でお呼びします。番号札は A-24 です。</p>
+      </div>
+      <div class="route">
+        <div class="route-tag"><span class="ai">AI</span> 帰りのご案内</div>
+        ${payLine}
+        <span class="route-wait"><i class="fa-solid fa-pills"></i> お薬のお渡しまで 約8分</span>
+        <div class="bluelane">
+          <span data-easy="みどりの せんの とおりに">緑色のラインに沿って</span>
+          <div class="lane-bar" style="background:repeating-linear-gradient(90deg,#17A673 0 22px,#8BE0BF 22px 34px);"></div>
+          <span>1階 西へ</span>
+        </div>
+      </div>
+      <div class="status-row">
+        <div class="status-box"><div class="k" data-easy="かえりの バス">帰りのバス</div><div class="v">14:20<small> 発</small></div></div>
+        <div class="status-box"><div class="k" data-easy="つぎの よやく">次回の予約</div><div class="v">11/6<small> 9:30</small></div></div>
+      </div>
+      <div class="guide-actions">
+        ${ state.paid
+          ? `<button class="btn btn-primary" data-act="ticket"><i class="fa-solid fa-barcode"></i> 帰りのバス乗車券を表示</button>`
+          : `<button class="btn btn-primary" data-act="pay"><i class="fa-solid fa-mobile-screen"></i> 今すぐスマホで支払う（${yen(state.due)}）</button>` }
+        <button class="btn btn-ghost detail" data-act="go-v4"><i class="fa-solid fa-pills"></i> 処方されたお薬を見る</button>
+      </div>`;
+  }
+
+  /* ---------- 4. 未精算で出口へ（警告デモ） ---------- */
+  if(state.step === 'unpaid'){
+    if(state.raku || state.paid){
+      /* らくらく会計がオンなら自動精算で解決済み、という対比デモ */
+      g.className = 'guide is-ok';
+      html = `
+        ${stepper(3)}
+        <div class="guide-top">
+          <span class="chip"><i class="fa-solid fa-circle-check"></i> 出口ゲート付近</span>
+          <h1 class="guide-title" data-easy="そのまま かえって だいじょうぶです">そのままお帰りいただけます</h1>
+          <p class="guide-sub">らくらく会計により、診察終了と同時に ${yen(state.due)} の精算が完了しました。</p>
+        </div>
+        <div class="route">
+          <div class="route-tag"><span class="ai">AI</span> 自動精算の結果</div>
+          <p class="route-main">未精算は <em>ありません</em></p>
+          <p class="route-why detail">VISA •••• 4821 に請求しました。領収書はアプリの「お支払い履歴」に保存されています。</p>
+        </div>
+        <div class="guide-actions">
+          <button class="btn btn-primary" data-act="ticket"><i class="fa-solid fa-barcode"></i> 帰りのバス乗車券を表示</button>
+        </div>`;
+    } else {
+      g.className = 'guide is-warn';
+      html = `
+        ${stepper(3, true)}
+        <div class="guide-top">
+          <span class="chip"><i class="fa-solid fa-triangle-exclamation"></i> 出口ゲートに近づいています</span>
+          <h1 class="guide-title" data-easy="おかねの はらいが まだです">お支払いがまだ終わっていません</h1>
+          <p class="guide-sub">このままお帰りになると、後日あらためてご来院いただくことになります。</p>
+        </div>
+        <div class="route" style="background:linear-gradient(135deg,#FFF1F0,#FDE3E1);border-color:#F3C4C1;">
+          <div class="route-tag" style="color:var(--warn);"><span class="ai" style="background:var(--warn);">!</span> 未精算のお知らせ</div>
+          <p class="route-main">未精算 <em>${yen(state.due)}</em></p>
+          <p class="route-why detail">10/8 内科 再診・レントゲン検査分。お薬（A-24）もまだお受け取りではありません。</p>
+        </div>
+        <div class="guide-actions">
+          <button class="btn btn-warn" data-act="pay"><i class="fa-solid fa-mobile-screen"></i> 今すぐ支払う（30秒で完了）</button>
+          <button class="btn btn-ghost detail" data-act="go-v3"><i class="fa-solid fa-gear"></i> 次回から自動で精算する設定にする</button>
+        </div>`;
+    }
+  }
+
+  g.innerHTML = html;
+  applyEasyText(g);
+  renderAlert();
+}
+
+/* 未精算時の警告バナー */
+function renderAlert(){
+  const zone = $('#alertZone');
+  if(state.step === 'unpaid' && !state.paid && !state.raku){
+    zone.innerHTML = `
+      <div class="alert-banner" role="alert">
+        <i class="fa-solid fa-bell"></i>
+        <div><b data-easy="ちょっと まってください！">お帰りの前にご確認ください</b>
+        <span>会計 ${yen(state.due)} とお薬の受け取りが残っています</span></div>
+      </div>`;
+    applyEasyText(zone);
+  }else{
+    zone.innerHTML = '';
+  }
+}
+
+/* =========================================================================
+   シミュレーションバー（審査員用）
+   ========================================================================= */
+function setStep(step){
+  state.step = step;
+  $$('.sim-btn').forEach(b=>b.classList.toggle('active', b.dataset.step === step));
+  renderGuide();
+
+  /* 状態に応じた通知を出す（体験としての「リアルタイム感」） */
+  if(step === 'home'){
+    toast('自動運転バスが 8:52 にお迎えに来ます', '', 3200);
+    switchView('v1');
+  }
+  if(step === 'arrive'){
+    toast('正面玄関で自動チェックインしました（内科 受付完了）', 'ok', 3600);
+    setTimeout(()=>toast('AIが順番を組み替えました：先にレントゲンへどうぞ', '', 4200), 1200);
+    switchView('v1');
+  }
+  if(step === 'checkout'){
+    if(state.raku && !state.paid){ state.paid = true; addPayment('らくらく会計（自動精算）', state.due); }
+    toast(state.paid ? 'らくらく会計で精算が完了しました' : '診察が終わりました。お支払いにお進みください', state.paid ? 'ok' : '', 3600);
+    renderGuide();
+    switchView(state.paid ? 'v1' : 'v3');
+  }
+  if(step === 'unpaid'){
+    if(state.raku || state.paid){
+      toast('自動精算ずみです。そのままお帰りいただけます', 'ok', 3600);
+    }else{
+      toast('未精算です。出口ゲートに近づいています', 'warn', 5000);
+      if(navigator.vibrate) navigator.vibrate([200,100,200]);
+    }
+    switchView('v1');
+  }
+  renderPayViews();
+}
+
+/* =========================================================================
+   C. メインビューの切り替え
+   ========================================================================= */
+function switchView(id){
+  $$('.view').forEach(v=>v.classList.toggle('active', v.id === id));
+  $$('.nav-btn').forEach(b=>b.classList.toggle('active', b.dataset.view === id));
+}
+$$('.nav-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    switchView(btn.dataset.view);
+    btn.scrollIntoView({behavior:'smooth', block:'start'});
+  });
+});
+
+/* ガイドカード内ボタンの処理（カードは再描画されるのでイベント委譲） */
+$('#guideCard').addEventListener('click', e=>{
+  const b = e.target.closest('[data-act]'); if(!b) return;
+  const act = b.dataset.act;
+  if(act === 'ticket') showTicketModal();
+  if(act === 'route')  showRouteModal();
+  if(act === 'pay')    doPay('アプリ決済');
+  if(act === 'go-v1')  switchView('v1');
+  if(act === 'go-v2')  switchView('v2');
+  if(act === 'go-v3')  switchView('v3');
+  if(act === 'go-v4')  switchView('v4');
+});
+
+/* =========================================================================
+   ① 受診ガイド＆バス乗降券まわり
+   ========================================================================= */
+/* バーコードの縞をランダム生成 */
+function drawBars(target){
+  const el = typeof target === 'string' ? $(target) : target;
+  let h = '';
+  for(let i=0;i<52;i++){
+    const w = [2,3,5][Math.floor(Math.random()*3)];
+    const hh = 60 + Math.random()*40;
+    h += `<span style="width:${w}px;height:${hh}%"></span>`;
+  }
+  el.innerHTML = h;
+}
+
+function showTicketModal(){
+  $('#genTitle').textContent = 'バス乗降券';
+  $('#genBody').innerHTML = `
+    <div class="ticket">
+      <div class="who">${state.user} さん・医療モビリティ 無料乗車</div>
+      <div class="line">${state.step === 'checkout' || state.step === 'unpaid' ? '近大病院シャトル（帰り）14:20発' : '近大病院シャトル 南ルート 8:52発'}</div>
+      <div class="barcode"><div class="bars" id="barsModal"></div><div class="num">KDU-4821-9073</div></div>
+      <div class="note">乗車口のリーダーにかざしてください</div>
+    </div>
+    <div class="note mt">画面の明るさを自動で最大にしています。読み取りにくいときは、スマホを少し離してください。</div>
+    <button class="btn btn-primary mt" data-close="genModal">とじる</button>`;
+  drawBars('#barsModal');
+  openModal('genModal');
+}
+
+function showRouteModal(){
+  $('#genTitle').textContent = '院内ルート案内';
+  $('#genBody').innerHTML = `
+    <div class="card"><ul class="list">
+      <li><div class="ico"><i class="fa-solid fa-door-open"></i></div><div class="main"><div class="name">正面玄関（現在地）</div><div class="meta">チェックイン完了 10:02</div></div></li>
+      <li><div class="ico" style="background:#E3F1FF;"><i class="fa-solid fa-arrow-up-right-dots" style="color:var(--line-blue)"></i></div><div class="main"><div class="name">青いラインに沿って 中央エスカレーター</div><div class="meta">約60m・徒歩1分</div></div></li>
+      <li><div class="ico"><i class="fa-solid fa-x-ray"></i></div><div class="main"><div class="name">2階 放射線部（レントゲン）</div><div class="meta">到着すると自動で受付されます</div></div><span class="pill ok">約3分</span></li>
+      <li><div class="ico"><i class="fa-solid fa-droplet"></i></div><div class="main"><div class="name">1階 中央検査部（採血）</div><div class="meta">レントゲンのあとに戻ります</div></div><span class="pill mid">約12分</span></li>
+      <li><div class="ico"><i class="fa-solid fa-stethoscope"></i></div><div class="main"><div class="name">3階 内科 診察室2</div><div class="meta">検査結果がそろい次第お呼びします</div></div></li>
+    </ul></div>
+    <div class="note mt"><i class="fa-solid fa-lightbulb"></i> 床とサインの「青いライン」をたどると、迷わず到着できます。曲がり角ではスマホが振動してお知らせします。</div>
+    <button class="btn btn-primary mt" data-close="genModal">とじる</button>`;
+  openModal('genModal');
+}
+
+/* 待ち状況リストの描画 */
+function renderWaits(){
+  $('#waitList').innerHTML = waits.map(w=>`
+    <li>
+      <div class="ico"><i class="fa-solid ${w.icon}"></i></div>
+      <div class="main">
+        <div class="name" data-easy="${w.easy}">${w.name}</div>
+        <div class="meta detail">${w.place}・${w.people}人待ち</div>
+      </div>
+      ${waitPill(w)}
+    </li>`).join('');
+  applyEasyText($('#waitList'));
+}
+
+/* チェックイン状況 */
+let checkins = [
+  {name:'正面玄関', time:'10:02', done:true},
+  {name:'内科 受付（3階）', time:'10:04', done:true},
+  {name:'放射線部（2階）', time:'', done:false},
+];
+function renderCheckins(){
+  $('#checkinList').innerHTML = `<ul class="list">` + checkins.map(c=>`
+    <li>
+      <div class="ico" style="${c.done?'background:var(--ok-bg);color:var(--ok)':''}">
+        <i class="fa-solid ${c.done?'fa-circle-check':'fa-location-dot'}"></i>
+      </div>
+      <div class="main"><div class="name">${c.name}</div>
+      <div class="meta">${c.done ? c.time + ' 自動チェックインずみ' : 'まだ到着していません'}</div></div>
+    </li>`).join('') + `</ul>`;
+}
+
+/* =========================================================================
+   ② 予約・AI問診
+   ========================================================================= */
+const appts = [
+  {d:'10月8日（水）9:30', dept:'内科 再診', place:'3階 A受付', state:'本日'},
+  {d:'11月6日（木）9:30', dept:'内科 再診', place:'3階 A受付', state:'予約ずみ'},
+  {d:'11月20日（木）14:00', dept:'整形外科 初診', place:'2階 C受付', state:'予約ずみ'},
+];
+function renderAppts(){
+  $('#apptList').innerHTML = appts.map(a=>`
+    <li>
+      <div class="ico"><i class="fa-regular fa-calendar"></i></div>
+      <div class="main"><div class="name">${a.d}</div><div class="meta">${a.dept}・${a.place}</div></div>
+      <span class="pill ${a.state==='本日'?'busy':'ok'}">${a.state}</span>
+    </li>`).join('');
+}
+
+/* 24時間仮受付 */
+$('#tempBtn').addEventListener('click', ()=>{
+  const dept = $('#deptSel').value;
+  const date = $('#dateSel').value || '（日付未選択）';
+  const time = $('#timeSel').value;
+  $('#tempResult').innerHTML = `
+    <div class="note ok mt">
+      <b>仮受付を受け付けました</b><br>
+      ${dept}／${date}／${time}<br>
+      <span class="detail">明日の朝6時に自動で本受付に切り替わります。確定するとアプリに通知が届きます。取り消しはいつでもできます。</span>
+    </div>`;
+  toast('仮受付を受け付けました（朝6時に自動で本受付）', 'ok');
+});
+
+/* AI症状日記 → 問診票の自動生成 */
+$('#diaryBtn').addEventListener('click', ()=>{
+  const box = $('#diaryResult');
+  box.innerHTML = `<div class="note mt center"><span class="spinner"></span> AIがメモを読み取って問診票を作成しています…</div>`;
+  setTimeout(()=>{
+    box.innerHTML = `
+      <div class="card mt" style="box-shadow:none;border:2px solid var(--blue);">
+        <div class="card-head"><i class="fa-solid fa-file-medical"></i><h2>AIが作成した問診票</h2></div>
+        <div class="card-body">
+          <div class="kv"><span>主な症状</span><b>右ひざの痛み</b></div>
+          <div class="kv"><span>始まった時期</span><b>10月2日ごろ（約6日前）</b></div>
+          <div class="kv"><span>痛むとき</span><b>階段を下りるとき・歩行30分後</b></div>
+          <div class="kv"><span>経過</span><b>腫れあり／夜間痛あり（2回覚醒）</b></div>
+          <div class="kv"><span>市販薬</span><b>湿布を使用・一時的に軽快</b></div>
+          <div class="kv"><span>おすすめの科</span><b>整形外科</b></div>
+          <div class="note mt detail"><i class="fa-solid fa-user-doctor"></i> この内容は受診時に医師の画面へ送られます。診察前に修正することもできます。</div>
+          <button class="btn btn-primary mt" id="sendKarte"><i class="fa-solid fa-paper-plane"></i> この内容で医師に送る</button>
+        </div>
+      </div>`;
+    $('#sendKarte').addEventListener('click', ()=>toast('問診票を医師に送信しました', 'ok'));
+  }, 1500);
+});
+
+/* =========================================================================
+   ③ お支払い
+   ========================================================================= */
+let payments = [
+  {d:'9月10日', t:'内科 再診・処方', a:1980, m:'プリペイド'},
+  {d:'8月13日', t:'内科 再診', a:1450, m:'らくらく会計'},
+];
+function addPayment(method, amount){
+  payments.unshift({d:'10月8日', t:'内科 再診・レントゲン', a:amount, m:method});
+  renderPayViews();
+}
+function renderPayViews(){
+  $('#balance').textContent = yen(state.balance);
+  $('#dueAmount').textContent = state.paid ? '支払いずみ' : yen(state.due);
+  $('#payHistory').innerHTML = payments.map(p=>`
+    <li>
+      <div class="ico"><i class="fa-solid fa-receipt"></i></div>
+      <div class="main"><div class="name">${p.t}</div><div class="meta">${p.d}・${p.m}</div></div>
+      <b>${yen(p.a)}</b>
+    </li>`).join('');
+  const note = $('#rakuNote');
+  note.className = state.raku ? 'note ok mt' : 'note mt';
+  note.textContent = state.raku
+    ? '自動精算はオンです。診察が終わると自動でお支払いが完了し、そのままお帰りいただけます。'
+    : '自動精算はオフです。会計窓口かアプリでのお支払いが必要です。';
+}
+
+/* らくらく会計スイッチ */
+$('#rakuSwitch').addEventListener('click', ()=>{
+  state.raku = !state.raku;
+  $('#rakuSwitch').classList.toggle('on', state.raku);
+  $('#rakuSwitch').setAttribute('aria-pressed', String(state.raku));
+  renderPayViews(); renderGuide();
+  toast(state.raku ? 'らくらく会計をオンにしました' : 'らくらく会計をオフにしました', state.raku?'ok':'');
+});
+
+/* プリペイドのチャージ */
+$$('[data-charge]').forEach(b=>{
+  b.addEventListener('click', ()=>{
+    state.balance += Number(b.dataset.charge);
+    renderPayViews();
+    toast(yen(Number(b.dataset.charge)) + ' をチャージしました', 'ok');
+  });
+});
+
+/* Apple Pay 風のワンタップ決済デモ */
+$('#applePayBtn').addEventListener('click', ()=>{
+  if(state.paid){ toast('本日分のお支払いはすでに完了しています'); return; }
+  const box = $('#payResult');
+  box.innerHTML = `<div class="note mt center"><span class="spinner"></span> 顔認証で確認しています…</div>`;
+  setTimeout(()=>{ doPay('Apple Pay'); box.innerHTML = `<div class="note ok mt center"><i class="fa-solid fa-circle-check"></i> お支払いが完了しました</div>`; }, 1400);
+});
+
+/* 支払い実行（ガイドカードの「今すぐ支払う」からも呼ばれる） */
+function doPay(method){
+  if(state.paid){ toast('すでにお支払いが完了しています'); return; }
+  state.paid = true;
+  addPayment(method, state.due);
+  renderGuide();
+  toast(yen(state.due) + ' のお支払いが完了しました（' + method + '）', 'ok', 4200);
+  if(state.step === 'unpaid') setTimeout(()=>{ setStep('checkout'); }, 900);
+}
+
+/* =========================================================================
+   ④ 医療SNS・お薬・カルテ
+   ========================================================================= */
+const feed = [
+  {n:'Maria（スペイン・52歳）', c:'#B4508A', tr:true, md:false, t:'3時間前',
+   b:'膝の手術のあと、水中ウォーキングを週2回続けています。3か月で階段がとても楽になりました。同じ手術を受けた方はどんな運動をしていますか？', l:128},
+  {n:'近畿大学病院 リハビリテーション科（監修）', c:'#0E8A4F', tr:false, md:true, t:'昨日',
+   b:'膝に負担をかけずに筋力を保つには、水中運動や自転車こぎが向いています。痛みが出た日は無理をせず、腫れているときは休みましょう。', l:342},
+  {n:'たろう（近畿・68歳）', c:'#0066CC', tr:false, md:false, t:'2日前',
+   b:'血圧を毎朝はかってアプリに記録しています。診察のとき先生にグラフを見せられるので、説明がとても楽になりました。', l:57},
+];
+function renderFeed(){
+  $('#feed').innerHTML = feed.map((p,i)=>`
+    <div class="post">
+      <div class="post-head">
+        <div class="avatar" style="background:${p.c}">${p.n.slice(0,1)}</div>
+        <div>
+          <div class="post-name">${p.n}
+            ${p.md?'<span class="tag md">医師監修</span>':''}
+            ${p.tr?'<span class="tag tr">自動翻訳</span>':''}</div>
+          <div class="post-meta">${p.t}</div>
+        </div>
+      </div>
+      <p class="post-body">${p.b}</p>
+      <div class="post-acts">
+        <button class="like" data-like="${i}"><i class="fa-regular fa-heart"></i> <span>${p.l}</span></button>
+        <span class="detail"><i class="fa-regular fa-comment"></i> 返信する</span>
+      </div>
+    </div>`).join('');
+  $$('[data-like]').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      const on = b.classList.toggle('on');
+      const s = b.querySelector('span');
+      s.textContent = Number(s.textContent) + (on ? 1 : -1);
+      b.querySelector('i').className = on ? 'fa-solid fa-heart' : 'fa-regular fa-heart';
+    });
+  });
+}
+
+const meds = [
+  {n:'アムロジピン錠 5mg', m:'1日1回 朝食後', left:'残り12日分'},
+  {n:'ロキソプロフェン錠 60mg', m:'痛いときに1錠（1日3回まで）', left:'残り8回分'},
+  {n:'湿布（ロキソプロフェンテープ）', m:'1日1回 患部に貼付', left:'残り21枚'},
+];
+function renderMeds(){
+  $('#medList').innerHTML = meds.map(m=>`
+    <li><div class="ico"><i class="fa-solid fa-capsules"></i></div>
+    <div class="main"><div class="name">${m.n}</div><div class="meta">${m.m}</div></div>
+    <span class="pill ok">${m.left}</span></li>`).join('');
+}
+
+const hist = [
+  {d:'10月8日', t:'内科 再診（本日）', m:'レントゲン・採血'},
+  {d:'9月10日', t:'内科 再診', m:'血圧 132/78・処方3種'},
+  {d:'8月13日', t:'内科 再診', m:'血液検査 異常なし'},
+];
+function renderHistory(){
+  $('#historyList').innerHTML = hist.map(h=>`
+    <li><div class="ico"><i class="fa-regular fa-file-lines"></i></div>
+    <div class="main"><div class="name">${h.d}　${h.t}</div><div class="meta">${h.m}</div></div>
+    <i class="fa-solid fa-chevron-right" style="color:#B7C4D0"></i></li>`).join('');
+}
+
+/* =========================================================================
+   D. お助けAIコンシェルジュ
+   ========================================================================= */
+function aiAnswer(q){
+  const s = state.step;
+  if(q.includes('次どこ')){
+    if(s === 'home')   return '今は自動運転バスで病院に向かっています。正面玄関でおりると、アプリが自動で受付をします。おりたらそのまま中に入ってください。';
+    if(s === 'arrive') return '採血は今とても混んでいます。先に2階のレントゲンへ行きましょう。床の青い線のとおりに進むと着きます。3分ほどで終わります。';
+    if(s === 'checkout') return '診察は終わりました。1階の西にある薬局でお薬を受け取ってください。番号は A-24 です。緑の線をたどると着きます。';
+    return 'お帰りの前に、まだお支払いが残っています。画面の「今すぐ支払う」を押してください。30秒で終わります。';
+  }
+  if(q.includes('支払') || q.includes('払い')){
+    return 'お支払いは3つの方法があります。1つめはクレジットカードの「らくらく会計」で、診察が終わると自動で支払われます。2つめは病院プリペイドで、先にお金を入れておきます。3つめは Apple Pay です。どれも窓口に並ばずにすみます。';
+  }
+  if(q.includes('待ち')){
+    const l = waits.map(w=>`${w.name}は約${w.min}分`).join('、');
+    return `今の待ち時間をお伝えします。${l} です。空いているところから先にご案内できます。`;
+  }
+  if(q.includes('バス')){
+    return '乗降券はアプリの「本日の受診ガイド」にあります。バーコードを乗車口の機械にかざすだけです。運賃は通院支援のため無料です。次の便は 8:52 に来ます。';
+  }
+  if(q.includes('薬')){
+    return 'お薬は1階 西の院内薬局でお渡しします。会計が終わると自動で処方せんが送られるので、番号を呼ばれるまで椅子にかけてお待ちください。今の待ち時間は約8分です。';
+  }
+  return 'もう少しくわしく教えてください。「次どこに行けばいい？」「支払いのやり方は？」のように話しかけていただくと、すぐにお答えできます。';
+}
+
+function pushMsg(text, who='ai'){
+  const el = document.createElement('div');
+  el.className = 'msg ' + who;
+  el.innerHTML = who === 'ai'
+    ? `<div class="speak"><i class="fa-solid fa-volume-high"></i> 音声でご案内中</div>${text}`
+    : text;
+  $('#chat').appendChild(el);
+  $('#chat').scrollTop = $('#chat').scrollHeight;
+  return el;
+}
+function askAI(q){
+  pushMsg(q, 'me');
+  const t = document.createElement('div');
+  t.className = 'msg ai typing';
+  t.innerHTML = '<span></span><span></span><span></span>';
+  $('#chat').appendChild(t);
+  $('#chat').scrollTop = $('#chat').scrollHeight;
+  setTimeout(()=>{ t.remove(); pushMsg(aiAnswer(q)); }, 900);
+}
+$('#quick').addEventListener('click', e=>{
+  if(e.target.tagName === 'BUTTON') askAI(e.target.textContent);
+});
+
+/* マイク（音声入力風の演出） */
+$('#micBtn').addEventListener('click', ()=>{
+  const mic = $('#micBtn'), label = $('#micLabel');
+  mic.classList.add('listening');
+  label.textContent = 'お話しください…（聞き取り中）';
+  setTimeout(()=>{
+    mic.classList.remove('listening');
+    label.textContent = 'マイクを押して話しかけてください';
+    const samples = ['次どこに行けばいい？','待ち時間はどれくらい？','支払いのやり方は？','薬はどこでもらう？'];
+    askAI(samples[Math.floor(Math.random()*samples.length)]);
+  }, 1600);
+});
+
+/* =========================================================================
+   モーダルの開閉
+   ========================================================================= */
+function openModal(id){ $('#'+id).classList.add('open'); }
+function closeModal(id){ $('#'+id).classList.remove('open'); }
+document.addEventListener('click', e=>{
+  const c = e.target.closest('[data-close]');
+  if(c) closeModal(c.dataset.close);
+  if(e.target.classList.contains('modal')) e.target.classList.remove('open');
+});
+document.addEventListener('keydown', e=>{ if(e.key === 'Escape') $$('.modal.open').forEach(m=>m.classList.remove('open')); });
+
+$('#fabBtn').addEventListener('click', ()=>{
+  openModal('aiModal');
+  $('#fabBubble').style.display = 'none';
+  if(!$('#chat').children.length){
+    pushMsg('こんにちは、' + state.user + 'さん。困ったことがあれば、下のボタンを押すか、マイクに話しかけてください。');
+  }
+});
+$('#helpBtn').addEventListener('click', ()=>openModal('helpModal'));
+$('#easyToggle').addEventListener('click', toggleEasy);
+
+/* 家族の切り替え */
+$('#familySelect').addEventListener('change', e=>{
+  const name = e.target.selectedOptions[0].textContent.split(' さん')[0];
+  state.user = name;
+  $('#ticketWho').textContent = name + ' さん・医療モビリティ 無料乗車';
+  toast(name + ' さんの画面に切り替えました', 'ok');
+});
+
+/* 位置情報チェックインのデモ */
+$('#checkinBtn').addEventListener('click', ()=>{
+  const next = checkins.find(c=>!c.done);
+  if(!next){ toast('本日のチェックインはすべて完了しています'); return; }
+  next.done = true;
+  next.time = new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'});
+  renderCheckins();
+  toast(next.name + ' にチェックインしました', 'ok');
+});
+
+/* 待ち状況の更新（数字をゆらす） */
+$('#refreshWait').addEventListener('click', ()=>{
+  waits = waits.map(w=>{
+    const d = Math.round((Math.random()-.45)*6);
+    return {...w, min: Math.max(1, w.min + d), people: Math.max(0, w.people + Math.round(d/3))};
+  });
+  renderWaits();
+  toast('待ち状況を更新しました');
+});
+
+/* 帰り忘れ防止アラートのデモ */
+$('#demoAlertBtn').addEventListener('click', ()=>{ setStep('unpaid'); window.scrollTo({top:0,behavior:'smooth'}); });
+
+/* =========================================================================
+   初期化
+   ========================================================================= */
+function renderAll(){
+  renderGuide(); renderWaits(); renderCheckins(); renderAppts();
+  renderPayViews(); renderFeed(); renderMeds(); renderHistory();
+  applyEasyText();
+}
+$$('.sim-btn').forEach(b=>b.addEventListener('click', ()=>setStep(b.dataset.step)));
+drawBars('#bars');
+/* 仮受付フォームの初期日付は3日後 */
+(()=>{ const d = new Date(Date.now() + 86400000*3); $('#dateSel').value = d.toISOString().slice(0,10); })();
+renderAll();
+setTimeout(()=>toast('デモです。画面下のバーで状況を切り替えられます', '', 5000), 800);
+</script>
+</body>
+</html>
