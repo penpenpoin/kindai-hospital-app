@@ -7,756 +7,1219 @@
 <title>スマート病院通院ナビ｜近畿大学病院（プロトタイプ）</title>
 <meta name="description" content="近畿大学病院 患者向け通院支援アプリ「スマート病院通院ナビ」コンテスト提出用プロトタイプ">
 
-<!-- ===== 外部CDN（Google Fonts / Font Awesome） ===== -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
 <style>
-/* =========================================================
-   カラートークン
-   ========================================================= */
+/* =========================================================================
+   デザイン方針
+   ・デジタル庁デザインシステム（DADS）のアクセシビリティ指針に沿った高コントラスト配色
+   ・影とグラデーションは使わず、1px のボーダーで領域を分けるフラットな構成
+   ・角丸はカード12px／操作要素8px の2値に統一
+   ・余白を広くとり、文字は太さ（400/500/700）でメリハリをつける
+   ========================================================================= */
 :root{
   --navy:#003B6D;
-  --navy-deep:#00294C;
-  --blue:#0066CC;
-  --blue-dark:#0052A6;
-  --sky:#E7F1FC;
-  --bg:#EDF2F7;
+  --blue:#0066CC;          /* 白文字とのコントラスト比 5.5:1 */
+  --blue-dark:#004A94;
+  --blue-bg:#EAF2FB;
+  --text:#1A1A1C;          /* 白背景 17.4:1 */
+  --muted:#4E5661;         /* 白背景 7.4:1（AAA） */
+  --bg:#F5F7F9;
   --card:#FFFFFF;
-  --text:#12212E;
-  --muted:#5C6F80;
-  --border:#DCE5EE;
-  --ok:#0E8A4F;   --ok-bg:#E3F5EB;
-  --amber:#A45C00; --amber-bg:#FFF3DF;
-  --warn:#C62424;  --warn-bg:#FDEBEA;
-  --radius:18px;
-  --shadow:0 6px 20px rgba(0,59,109,.10);
-  --tap:64px;              
-  --bar-h:104px;           
+  --border:#E2E8F0;
+  --border-strong:#C8D3E0;
+  --ok:#0B7A45;   --ok-bg:#E6F4EC;
+  --amber:#8A5000; --amber-bg:#FDF3E2;
+  --warn:#B3211F;  --warn-bg:#FBEAEA;
+  /* 院内サインと合わせる矢印色（白アイコンが乗る前提の濃度） */
+  --arw-red:#C42B22; --arw-blue:#0B57D0; --arw-green:#0B7A45; --arw-yellow:#A97400;
+  --r-card:12px; --r-ctl:8px; --tap:56px; --bar-h:84px;
 }
-
-/* かんたんモード時はルートの文字サイズ自体を拡大 */
 html{font-size:16px;}
 html.easy{font-size:19.5px;}
-html.easy .detail{display:none !important;}          
+html.easy .detail{display:none !important;}
 html.easy .nav-btn{min-height:128px;}
-html.easy .guide-sub{font-size:1.05rem;}
 
 *{box-sizing:border-box;}
-body{
-  margin:0;
-  font-family:"Noto Sans JP",system-ui,-apple-system,"Hiragino Kaku Gothic ProN",sans-serif;
-  background:#DDE4EC;
-  color:var(--text);
-  line-height:1.7;
-  -webkit-text-size-adjust:100%;
-}
+body{margin:0;font-family:"Noto Sans JP",system-ui,-apple-system,"Hiragino Kaku Gothic ProN",sans-serif;
+  background:#E7ECF1;color:var(--text);line-height:1.75;-webkit-text-size-adjust:100%;}
 button{font-family:inherit;cursor:pointer;}
-:focus-visible{outline:3px solid #FFB200;outline-offset:2px;}
+:focus-visible{outline:3px solid #B25F00;outline-offset:2px;}
 @media (prefers-reduced-motion:reduce){*{animation:none !important;transition:none !important;}}
 
-.app{
-  max-width:480px;margin:0 auto;min-height:100vh;background:var(--bg);
-  box-shadow:0 0 40px rgba(0,30,60,.18);position:relative;overflow-x:hidden;
-  padding-bottom:calc(var(--bar-h) + 24px);
-}
+.app{max-width:480px;margin:0 auto;min-height:100vh;background:var(--bg);
+  border-left:1px solid var(--border-strong);border-right:1px solid var(--border-strong);
+  position:relative;overflow-x:hidden;padding-bottom:calc(var(--bar-h) + 110px);}
 
-/* ===== A. アクセシビリティバー ＆ ヘッダー ===== */
-/* 誤タップを防ぐため、かんたんモードは一番上に細く配置 */
-.a11y-bar{
-  background:#001E36; color:#A9CCEC; font-size:.75rem; 
-  display:flex; justify-content:flex-end; padding:.3rem .85rem;
-}
-.a11y-btn{
-  background:transparent; border:1px solid #33597A; color:#fff; border-radius:4px;
-  font-size:.7rem; padding:.2rem .5rem; display:flex; align-items:center; gap:.4rem;
-}
-.a11y-btn.on{ background:#FFD24A; color:#4A3200; border-color:#FFD24A; }
+/* ===== ヘッダー ===== */
+.top{position:sticky;top:0;z-index:40;}
+.app-header{background:var(--navy);color:#fff;border-bottom:1px solid #002B50;}
+.head-home{padding:.85rem 1rem 1rem;}
+.brand-sub{font-size:.75rem;color:#C3DBF0;line-height:1.4;}
+.brand-title{font-size:1.15rem;font-weight:700;line-height:1.4;}
+.header-controls{display:flex;gap:.5rem;margin-top:.85rem;}
+.user-select{flex:1;display:flex;align-items:center;gap:.5rem;min-width:0;background:#fff;
+  border:1px solid var(--border);border-radius:var(--r-ctl);padding:.3rem .7rem;}
+.user-select i{color:var(--muted);}
+.user-select select{flex:1;min-width:0;background:transparent;border:0;color:var(--text);font-size:.95rem;font-weight:700;font-family:inherit;padding:.45rem 0;}
+.hbtn{border:1px solid #4E7EA8;background:transparent;color:#fff;border-radius:var(--r-ctl);
+  padding:.4rem .8rem;font-size:.82rem;font-weight:700;display:flex;align-items:center;gap:.4rem;min-height:48px;}
+.head-sub{display:none;align-items:center;gap:.6rem;padding:.6rem .7rem;}
+.head-sub.show{display:flex;}
+.back-btn{display:flex;align-items:center;gap:.4rem;background:transparent;border:1px solid #4E7EA8;color:#fff;
+  border-radius:var(--r-ctl);padding:.55rem .9rem;font-size:1rem;font-weight:700;min-height:48px;}
+.head-sub h1{margin:0;font-size:1.05rem;font-weight:700;flex:1;}
 
-.app-header{
-  position:sticky;top:0;z-index:40;
-  background:linear-gradient(180deg,var(--navy) 0%,var(--navy-deep) 100%);
-  color:#fff;padding:.6rem .85rem .85rem;
-}
-.brand{display:flex;align-items:center;gap:.6rem;}
-.brand i{font-size:1.5rem;color:#8FC6F5;}
-.brand-sub{font-size:.7rem;letter-spacing:.08em;color:#A9CCEC;line-height:1.2;}
-.brand-title{font-size:1.12rem;font-weight:900;letter-spacing:.02em;line-height:1.3;}
-.header-controls{display:flex;gap:.45rem;margin-top:.7rem;align-items:stretch;}
+.status-strip{display:none;width:100%;text-align:left;border:0;border-bottom:1px solid var(--border);
+  background:var(--blue-bg);color:var(--blue-dark);padding:.6rem 1rem;font-size:.92rem;font-weight:700;align-items:center;gap:.5rem;}
+.status-strip.show{display:flex;}
+.status-strip .go{margin-left:auto;font-size:.82rem;font-weight:500;white-space:nowrap;}
 
-.user-select{
-  flex:1 1 auto;display:flex;align-items:center;gap:.45rem;min-width:0;
-  background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.3);
-  border-radius:12px;padding:.35rem .6rem;
-}
-.user-select i{color:#9FD0FF;font-size:.95rem;}
-.user-select select{
-  flex:1;min-width:0;background:transparent;border:0;color:#fff;
-  font-size:.95rem;font-weight:700;font-family:inherit;padding:.3rem 0;
-}
-.user-select select option{color:#12212E;}
-.hbtn{
-  border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.1);color:#fff;
-  border-radius:12px;padding:.35rem .8rem;font-size:.85rem;font-weight:700;
-  display:flex;align-items:center;gap:.4rem;
-}
+.companion{display:none;align-items:center;gap:.5rem;background:#F1ECF8;color:#4A2A7A;
+  border-bottom:1px solid #DCCFF0;padding:.55rem 1rem;font-size:.9rem;font-weight:700;}
+.companion.show{display:flex;}
 
-/* ===== 通知バナー ===== */
-.alert-zone{padding:0 .85rem;}
-.alert-banner{
-  display:flex;gap:.6rem;align-items:flex-start;
-  background:var(--warn);color:#fff;border-radius:14px;padding:.8rem .9rem;margin-top:.85rem;
-  box-shadow:0 6px 18px rgba(198,36,36,.3);animation:pulse 1.4s ease-in-out infinite;
-}
-.alert-banner i{font-size:1.35rem;margin-top:.1rem;}
-.alert-banner b{display:block;font-size:1.05rem;}
-.alert-banner span{font-size:.88rem;opacity:.95;}
-@keyframes pulse{0%,100%{box-shadow:0 6px 18px rgba(198,36,36,.28);}50%{box-shadow:0 6px 26px rgba(198,36,36,.65);}}
+/* ===== 共通 ===== */
+main{padding:1rem;display:flex;flex-direction:column;gap:1rem;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r-card);overflow:hidden;}
+.card-head{display:flex;align-items:center;gap:.6rem;padding:.9rem 1rem;border-bottom:1px solid var(--border);}
+.card-head i{color:var(--muted);font-size:1.05rem;}
+.card-head h2{margin:0;font-size:1.02rem;font-weight:700;}
+.card-body{padding:1.1rem 1rem;}
+.mt{margin-top:1rem;}
+.center{text-align:center;}
+.hide{display:none !important;}
 
-/* ===== 共通カード ===== */
-main{padding:.85rem;display:flex;flex-direction:column;gap:.9rem;}
-.card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;}
-.card-head{display:flex;align-items:center;gap:.55rem;padding:.85rem 1rem;border-bottom:1px solid var(--border);}
-.card-head i{color:var(--blue);font-size:1.15rem;}
-.card-head h2{margin:0;font-size:1.05rem;font-weight:900;}
-.card-body{padding:1rem;}
-
-/* ===== B. 本日の受診ガイド ===== */
-.guide{
-  background:var(--card);border-radius:22px;box-shadow:0 10px 26px rgba(0,59,109,.16);
-  border-top:6px solid var(--blue);overflow:hidden;
-}
-.guide.is-warn{border-top-color:var(--warn);}
+/* ===== 受診ガイド ===== */
+.guide{background:var(--card);border:1px solid var(--border);border-top:4px solid var(--blue);border-radius:var(--r-card);overflow:hidden;}
 .guide.is-ok{border-top-color:var(--ok);}
-.guide-top{padding:.9rem 1rem .2rem;}
-.chip{
-  display:inline-flex;align-items:center;gap:.4rem;background:var(--sky);color:var(--navy);
-  font-size:.82rem;font-weight:700;border-radius:999px;padding:.25rem .75rem;
-}
-.guide.is-warn .chip{background:var(--warn-bg);color:var(--warn);}
+.guide.is-quiet{border-top-color:var(--border-strong);}
+.guide-top{padding:1.1rem 1rem .3rem;}
+.chip{display:inline-flex;align-items:center;gap:.4rem;background:var(--blue-bg);color:var(--blue-dark);
+  font-size:.82rem;font-weight:700;border-radius:6px;padding:.25rem .6rem;}
 .guide.is-ok .chip{background:var(--ok-bg);color:var(--ok);}
-.guide-title{font-size:1.35rem;font-weight:900;line-height:1.4;margin:.55rem 0 .2rem;letter-spacing:.01em;}
-.guide-sub{color:var(--muted);font-size:.95rem;margin:0 0 .3rem;}
-
-.steps{display:flex;gap:.25rem;padding:.7rem 1rem 0;}
-.step{flex:1;text-align:center;font-size:.68rem;color:#93A4B3;font-weight:700;}
-.step .dot{height:7px;border-radius:99px;background:#E1E8EF;margin-bottom:.3rem;}
-.step.done .dot{background:#9CC9F2;}
+.guide.is-quiet .chip{background:#EEF1F4;color:var(--muted);}
+.guide-title{font-size:1.38rem;font-weight:700;line-height:1.5;margin:.7rem 0 .3rem;}
+.guide-sub{color:var(--muted);font-size:.95rem;margin:0;}
+.steps{display:flex;gap:.3rem;padding:.9rem 1rem 0;}
+.step{flex:1;text-align:center;font-size:.72rem;color:var(--muted);font-weight:500;}
+.step .dot{height:4px;border-radius:2px;background:var(--border);margin-bottom:.35rem;}
+.step.done .dot{background:var(--border-strong);}
 .step.now .dot{background:var(--blue);}
-.step.now{color:var(--blue);}
+.step.now{color:var(--blue-dark);font-weight:700;}
 
-.route{margin:.9rem 1rem;border-radius:16px;background:linear-gradient(135deg,#F2F8FF,#E4F0FE);border:1px solid #C9E0F7;padding:.9rem;}
-.route-tag{display:flex;align-items:center;gap:.4rem;font-size:.8rem;font-weight:800;color:var(--blue-dark);}
-.route-tag .ai{background:var(--blue);color:#fff;border-radius:6px;padding:.05rem .4rem;font-size:.7rem;}
-.route-main{font-size:1.15rem;font-weight:900;line-height:1.5;margin:.45rem 0 .1rem;}
-.route-main em{font-style:normal;background:linear-gradient(transparent 62%,#FFE07A 62%);padding:0 .1rem;}
-.route-why{font-size:.88rem;color:var(--muted);margin:.25rem 0 0;}
-.route-wait{
-  display:inline-flex;align-items:center;gap:.35rem;margin-top:.55rem;background:var(--ok-bg);color:var(--ok);
-  font-weight:800;border-radius:999px;padding:.2rem .7rem;font-size:.9rem;
-}
+.route{margin:1rem;border:1px solid var(--border);border-radius:var(--r-card);background:var(--bg);padding:1rem;}
+.route-tag{display:flex;align-items:center;gap:.45rem;font-size:.8rem;font-weight:700;color:var(--muted);}
+.route-tag .ai{background:var(--blue);color:#fff;border-radius:4px;padding:.05rem .4rem;font-size:.7rem;}
+.route-main{font-size:1.1rem;font-weight:700;line-height:1.6;margin:.5rem 0 0;}
+.route-main em{font-style:normal;border-bottom:3px solid var(--blue);padding-bottom:1px;}
+.route-wait{display:inline-flex;align-items:center;gap:.4rem;margin-top:.7rem;background:var(--ok-bg);color:var(--ok);
+  font-weight:700;border-radius:6px;padding:.25rem .6rem;font-size:.9rem;}
 
-/* スッキリした矢印案内 */
-.arrow-nav{
-  display:flex;align-items:center;gap:.5rem;margin-top:.75rem;
-  background:#fff;border-radius:12px;padding:.7rem .8rem;border:2px solid #E2E8F0;
-}
-.arrow-color{
-  display:inline-block;padding:.2rem .6rem;border-radius:6px;color:#fff;
-  font-size:.85rem;font-weight:900;white-space:nowrap;
-}
-.arrow-text{font-size:.95rem;font-weight:800;color:var(--text);line-height:1.3;}
+/* 矢印ナビ：色と「棟・階・ブロック・名称」を必ず同時に出す */
+.arrow-nav{display:flex;align-items:center;gap:.85rem;margin-top:.9rem;background:#fff;border:1px solid var(--border);border-radius:var(--r-ctl);padding:.85rem;}
+.arrow-mark{width:54px;border-radius:var(--r-ctl);display:flex;flex-direction:column;align-items:center;justify-content:center;
+  color:#fff;flex:none;padding:.45rem 0;gap:.1rem;}
+.arrow-mark i{font-size:1.3rem;}
+.arrow-mark .code{font-size:.85rem;font-weight:700;letter-spacing:.02em;}
+.arrow-nav .a-main{font-size:1.05rem;font-weight:700;line-height:1.5;}
+.arrow-nav .a-sub{font-size:.88rem;color:var(--muted);}
 
-.status-row{display:flex;gap:.6rem;padding:0 1rem 1rem;}
-.status-box{flex:1;background:#F5F8FB;border:1px solid var(--border);border-radius:14px;padding:.6rem .7rem;text-align:center;}
-.status-box .k{font-size:.75rem;color:var(--muted);font-weight:700;}
-.status-box .v{font-size:1.1rem;font-weight:900;color:var(--navy);line-height:1.3;}
-.status-box .v small{font-size:.75rem;font-weight:700;}
-.live{display:inline-block;width:8px;height:8px;border-radius:99px;background:#E53935;margin-right:.3rem;animation:blink 1.2s infinite;}
-@keyframes blink{50%{opacity:.25;}}
-
-.guide-actions{display:flex;flex-direction:column;gap:.55rem;padding:0 1rem 1.1rem;}
+.status-row{display:flex;gap:.7rem;padding:0 1rem 1rem;}
+.status-box{flex:1;border:1px solid var(--border);border-radius:var(--r-ctl);padding:.7rem;text-align:center;}
+.status-box .k{font-size:.78rem;color:var(--muted);font-weight:500;}
+.status-box .v{font-size:1.2rem;font-weight:700;line-height:1.4;}
+.status-box .v small{font-size:.78rem;font-weight:500;color:var(--muted);}
+.live{display:inline-block;width:7px;height:7px;border-radius:99px;background:var(--warn);margin-right:.3rem;}
+.guide-actions{display:flex;flex-direction:column;gap:.6rem;padding:0 1rem 1.1rem;}
+.today-list{margin:0 1rem 1rem;border:1px solid var(--border);border-radius:var(--r-ctl);padding:.85rem;}
+.today-list .lb{font-size:.8rem;color:var(--muted);font-weight:500;}
+.today-list .items{font-size:1rem;font-weight:700;margin-top:.15rem;}
+.today-list .hint{font-size:.85rem;color:var(--muted);margin-top:.3rem;}
 
 /* ===== ボタン ===== */
-.btn{
-  display:flex;align-items:center;justify-content:center;gap:.5rem;
-  min-height:var(--tap);border-radius:14px;border:0;font-size:1.05rem;font-weight:800;
-  padding:.7rem 1rem;transition:transform .12s ease;
-}
-.btn:active{transform:scale(.98);}
-.btn-primary{background:var(--blue);color:#fff;box-shadow:0 4px 12px rgba(0,102,204,.28);}
-.btn-ghost{background:#fff;color:var(--blue-dark);border:2px solid var(--blue);}
-.btn-warn{background:var(--warn);color:#fff;box-shadow:0 4px 14px rgba(198,36,36,.3);}
-.btn-dark{background:#111;color:#fff;}
-.btn-sm{min-height:46px;font-size:.92rem;padding:.4rem .9rem;border-radius:12px;}
+.btn{display:flex;align-items:center;justify-content:center;gap:.5rem;min-height:var(--tap);border-radius:var(--r-ctl);
+  border:1px solid transparent;font-size:1.02rem;font-weight:700;padding:.75rem 1rem;}
+.btn-primary{background:var(--blue);color:#fff;}
+.btn-primary:active{background:var(--blue-dark);}
+.btn-quiet{background:#fff;color:var(--blue-dark);border-color:var(--border-strong);}
+.btn-quiet:active{background:var(--bg);}
+.btn-dark{background:#1A1A1C;color:#fff;}
+.btn-sm{min-height:40px;font-size:.88rem;padding:.3rem .8rem;}
+.btn-xl{min-height:68px;font-size:1.15rem;}
 
-/* ===== C. メイン4ボタン ===== */
-.main-nav{display:grid;grid-template-columns:1fr 1fr;gap:.7rem;}
-.nav-btn{
-  min-height:112px;border-radius:18px;border:2px solid transparent;background:var(--card);
-  box-shadow:var(--shadow);padding:.8rem .6rem;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;gap:.3rem;text-align:center;color:var(--text);
-}
-.nav-btn i{font-size:1.75rem;color:var(--blue);}
-.nav-btn .t{font-size:1rem;font-weight:900;line-height:1.35;}
-.nav-btn .s{font-size:.75rem;color:var(--muted);line-height:1.3;}
-.nav-btn.active{border-color:var(--blue);background:var(--sky);}
-.nav-btn.active i{color:var(--navy);}
+/* ===== 診察券（常時表示） ===== */
+.idcard{background:var(--card);border:1px solid var(--border);border-radius:var(--r-card);overflow:hidden;}
+.idcard-head{display:flex;align-items:center;gap:.6rem;padding:.75rem 1rem;border-bottom:1px solid var(--border);}
+.idcard-head h2{margin:0;font-size:1rem;font-weight:700;flex:1;}
+.idcard-head .num{font-size:.85rem;color:var(--muted);font-weight:500;}
+.idcard-body{padding:.9rem 1rem 1rem;}
+.barcode{background:#fff;border:1px solid var(--border);border-radius:var(--r-ctl);padding:.9rem .7rem .6rem;}
+.bars{display:flex;align-items:flex-end;justify-content:center;gap:2px;height:62px;}
+.bars span{background:#1A1A1C;width:3px;height:100%;}
+.barcode .num{font-size:.85rem;letter-spacing:.24em;color:var(--text);margin-top:.5rem;font-weight:700;text-align:center;}
+.idcard .use{font-size:.85rem;color:var(--muted);margin-top:.7rem;}
+.barcode.big .bars{height:130px;}
+.barcode.big .bars span{width:4px;}
 
-.view{display:none;}
-.view.active{display:block;animation:rise .22s ease-out;}
-@keyframes rise{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+/* ===== メイン4ボタン ===== */
+.main-nav{display:grid;grid-template-columns:1fr 1fr;gap:.8rem;}
+.nav-btn{position:relative;min-height:110px;border-radius:var(--r-card);border:1px solid var(--border);background:var(--card);
+  padding:1rem .7rem;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.5rem;text-align:center;color:var(--text);}
+.nav-btn:active{background:var(--bg);}
+.nav-btn i.mainico{font-size:1.5rem;color:var(--blue);}
+.nav-btn .t{font-size:1rem;font-weight:700;line-height:1.4;}
+.nav-btn .chev{position:absolute;right:10px;bottom:9px;color:var(--border-strong);font-size:.75rem;}
 
-/* リスト・チケット類 */
+.screen{display:none;}
+.screen.active{display:block;}
+
+/* ===== リスト ===== */
 .list{list-style:none;margin:0;padding:0;}
-.list li{display:flex;align-items:center;gap:.7rem;padding:.75rem 1rem;border-bottom:1px solid var(--border);}
+.list li{display:flex;align-items:center;gap:.85rem;padding:.9rem 1rem;border-bottom:1px solid var(--border);}
 .list li:last-child{border-bottom:0;}
-.list .ico{width:38px;height:38px;border-radius:11px;background:var(--sky);color:var(--navy);display:grid;place-items:center;flex:none;}
+.list .ico{width:38px;min-height:38px;border-radius:var(--r-ctl);background:var(--bg);border:1px solid var(--border);
+  color:var(--muted);display:flex;flex-direction:column;align-items:center;justify-content:center;flex:none;font-weight:700;font-size:.9rem;}
+.list .ico .code{font-size:.7rem;line-height:1.1;}
 .list .main{flex:1;min-width:0;}
-.list .name{font-weight:800;font-size:1rem;}
-.list .meta{font-size:.82rem;color:var(--muted);}
-.pill{border-radius:999px;padding:.15rem .6rem;font-size:.82rem;font-weight:800;white-space:nowrap;}
+.list .name{font-weight:700;font-size:1rem;line-height:1.5;}
+.list .meta{font-size:.85rem;color:var(--muted);line-height:1.5;}
+.list li.now{background:var(--blue-bg);}
+.pill{border-radius:6px;padding:.2rem .5rem;font-size:.82rem;font-weight:700;white-space:nowrap;}
 .pill.ok{background:var(--ok-bg);color:var(--ok);}
 .pill.mid{background:var(--amber-bg);color:var(--amber);}
 .pill.busy{background:var(--warn-bg);color:var(--warn);}
+.pill.done{background:#EEF1F4;color:var(--muted);}
+.pill.time{background:var(--blue-bg);color:var(--blue-dark);}
+.empty{padding:1.4rem 1rem;text-align:center;color:var(--muted);font-size:.95rem;width:100%;}
 
-.ticket{background:linear-gradient(160deg,var(--navy),#075594);color:#fff;border-radius:18px;padding:1rem;text-align:center;}
-.ticket .who{font-size:.85rem;color:#B6D8F6;}
-.ticket .line{font-size:1.15rem;font-weight:900;margin:.15rem 0 .7rem;}
-.barcode{background:#fff;border-radius:12px;padding:.9rem .7rem .5rem;}
-.bars{display:flex;align-items:flex-end;justify-content:center;gap:2px;height:70px;}
-.bars span{background:#111;width:3px;height:100%;}
-.barcode .num{font-size:.85rem;letter-spacing:.28em;color:#333;margin-top:.4rem;font-weight:700;}
+/* 入力 */
+label.field{display:block;margin-bottom:1rem;}
+label.field .lb{font-weight:700;font-size:.92rem;display:block;margin-bottom:.35rem;}
+select.inp,input.inp,textarea.inp{width:100%;border:1px solid var(--border-strong);border-radius:var(--r-ctl);
+  padding:.8rem;font-size:1rem;font-family:inherit;background:#fff;color:var(--text);}
+textarea.inp{min-height:110px;resize:vertical;line-height:1.7;}
 
-label.field{display:block;margin-bottom:.7rem;}
-label.field .lb{font-weight:800;font-size:.92rem;display:block;margin-bottom:.25rem;}
-select.inp,input.inp,textarea.inp{
-  width:100%;border:2px solid var(--border);border-radius:12px;padding:.7rem;font-size:1rem;background:#fff;color:var(--text);
-}
-.note{background:var(--sky);border-left:5px solid var(--blue);border-radius:10px;padding:.7rem .8rem;font-size:.88rem;color:#0B3C68;}
-.note.warn{background:var(--warn-bg);border-left-color:var(--warn);color:#7A1A1A;}
-.note.ok{background:var(--ok-bg);border-left-color:var(--ok);color:#0B5A36;}
+.note{background:var(--bg);border:1px solid var(--border);border-left:4px solid var(--blue);border-radius:var(--r-ctl);
+  padding:.85rem;font-size:.92rem;color:var(--text);}
+.note.warn{background:var(--warn-bg);border-color:#EED2D1;border-left-color:var(--warn);}
+.note.ok{background:var(--ok-bg);border-color:#CFE6DA;border-left-color:var(--ok);}
+.note.plain{border-left-color:var(--border-strong);}
 
-.balance{background:linear-gradient(135deg,#0A5FAE,#003B6D);color:#fff;border-radius:16px;padding:1rem;}
-.balance .k{font-size:.85rem;color:#B9D9F5;}
-.balance .v{font-size:2.2rem;font-weight:900;letter-spacing:.02em;}
-.chips{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.7rem;}
-.chip-btn{border:2px solid rgba(255,255,255,.55);background:rgba(255,255,255,.12);color:#fff;border-radius:999px;padding:.45rem .85rem;font-weight:800;font-size:.95rem;}
+.balance{border:1px solid var(--border);border-radius:var(--r-ctl);padding:1rem;}
+.balance .k{font-size:.85rem;color:var(--muted);font-weight:500;}
+.balance .v{font-size:2rem;font-weight:700;}
+.chips{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.8rem;}
+.chip-btn{border:1px solid var(--border-strong);background:#fff;color:var(--blue-dark);border-radius:var(--r-ctl);
+  padding:.55rem .9rem;font-weight:700;font-size:.95rem;min-height:48px;}
+.badge-on{display:inline-flex;align-items:center;gap:.4rem;background:var(--ok-bg);color:var(--ok);font-weight:700;border-radius:6px;padding:.25rem .6rem;font-size:.85rem;}
 
-.post{padding:.9rem 1rem;border-bottom:1px solid var(--border);}
-.post-head{display:flex;align-items:center;gap:.55rem;}
-.avatar{width:40px;height:40px;border-radius:99px;display:grid;place-items:center;color:#fff;font-weight:900;flex:none;}
-.post-name{font-weight:800;font-size:.95rem;}
-.post-meta{font-size:.75rem;color:var(--muted);}
-.tag{font-size:.7rem;font-weight:800;border-radius:6px;padding:.05rem .4rem;margin-left:.3rem;}
-.tag.md{background:var(--ok-bg);color:var(--ok);}
-.post-body{font-size:.95rem;margin:.55rem 0 .4rem;}
-.post-acts{display:flex;gap:.9rem;font-size:.85rem;color:var(--muted);}
-.like{background:none;border:0;color:var(--muted);font-weight:700;font-size:.85rem;padding:.2rem;}
-.like.on{color:#D6336C;}
+/* ===== からだの記録：タップだけで入力できる部品 ===== */
+.rec-label{font-size:.92rem;font-weight:700;margin:1.1rem 0 .45rem;}
+.rec-label:first-child{margin-top:0;}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem;}
+.seg button{min-height:56px;border:1px solid var(--border-strong);background:#fff;color:var(--text);
+  border-radius:var(--r-ctl);font-size:1rem;font-weight:700;}
+.seg button[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:#fff;}
+.tags{display:flex;flex-wrap:wrap;gap:.5rem;}
+.tags button{min-height:48px;border:1px solid var(--border-strong);background:#fff;color:var(--text);
+  border-radius:var(--r-ctl);padding:.4rem .85rem;font-size:.98rem;font-weight:500;}
+.tags button[aria-pressed="true"]{background:var(--blue-bg);border-color:var(--blue);color:var(--blue-dark);font-weight:700;}
+.levels{display:grid;grid-template-columns:repeat(5,1fr);gap:.5rem;}
+.levels button{min-height:52px;border:1px solid var(--border-strong);background:#fff;color:var(--text);
+  border-radius:var(--r-ctl);font-size:1.05rem;font-weight:700;}
+.levels button[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:#fff;}
+.med-act{display:flex;flex-direction:column;align-items:flex-end;gap:.4rem;flex:none;}
+.med-act .btn-sm{min-height:40px;padding:.2rem .7rem;}
+.med-act .btn-sm:disabled{opacity:.45;}
+.level-note{display:flex;justify-content:space-between;font-size:.8rem;color:var(--muted);margin-top:.3rem;}
+.memo-row{display:flex;gap:.5rem;}
+.memo-row .inp{flex:1;}
+.memo-row button{width:56px;min-height:56px;border:1px solid var(--border-strong);background:#fff;color:var(--blue-dark);
+  border-radius:var(--r-ctl);font-size:1.1rem;flex:none;}
+.memo-row button.listening{background:var(--warn);border-color:var(--warn);color:#fff;}
 
-/* ===== D. AIコンシェルジュ ===== */
-.fab-wrap{
-  position:fixed;bottom:calc(var(--bar-h) + 14px);left:50%;transform:translateX(-50%);
-  width:100%;max-width:480px;pointer-events:none;z-index:50;
-  display:flex;justify-content:flex-end;align-items:center;gap:.4rem;padding:0 .85rem;
-}
-.fab-bubble{
-  pointer-events:none;background:#fff;border:2px solid var(--blue);color:var(--blue-dark);
-  font-weight:800;font-size:.85rem;border-radius:14px;padding:.35rem .7rem;box-shadow:var(--shadow);
-  animation:float 2.4s ease-in-out infinite;
-}
-@keyframes float{50%{transform:translateY(-4px);}}
-.fab{
-  pointer-events:auto;width:70px;height:70px;border-radius:99px;border:3px solid #fff;
-  background:radial-gradient(circle at 30% 25%,#2E9BFF,#0052A6);color:#fff;
-  box-shadow:0 8px 22px rgba(0,59,109,.4);display:grid;place-items:center;font-size:1.5rem;
-}
+.switch-row{display:flex;align-items:center;gap:1rem;padding:1rem;}
+.switch{width:58px;height:32px;border-radius:16px;background:#8A94A0;border:0;position:relative;flex:none;}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:26px;height:26px;border-radius:13px;background:#fff;transition:transform .15s;}
+.switch.on{background:var(--ok);}
+.switch.on::after{transform:translateX(26px);}
 
-/* シミュレーションバー */
-.simbar{
-  position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;z-index:60;
-  background:#101C27;color:#fff;padding:.45rem .6rem calc(.6rem + env(safe-area-inset-bottom));
-  box-shadow:0 -6px 20px rgba(0,0,0,.3);
-}
-.simbar h3{margin:0 0 .35rem;font-size:.72rem;font-weight:700;color:#8FA6BA;}
-.sim-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.35rem;}
-.sim-btn{
-  background:#1E2F3E;border:1px solid #33475A;color:#CFE0EE;border-radius:11px;padding:.4rem .2rem;
-  font-size:.68rem;font-weight:700;display:flex;flex-direction:column;align-items:center;gap:.15rem;min-height:56px;justify-content:center;
-}
-.sim-btn.active{background:var(--blue);border-color:#6FB6FF;color:#fff;}
-.sim-btn.danger.active{background:var(--warn);border-color:#FF8A8A;}
+/* ===== AIコンシェルジュ ===== */
+.fab-wrap{position:fixed;bottom:calc(var(--bar-h) + 16px);left:50%;transform:translateX(-50%);width:100%;max-width:480px;
+  pointer-events:none;z-index:50;display:flex;justify-content:flex-end;align-items:center;gap:.5rem;padding:0 1rem;}
+.fab-bubble{background:#fff;border:1px solid var(--border-strong);color:var(--blue-dark);font-weight:700;font-size:.85rem;
+  border-radius:var(--r-ctl);padding:.4rem .7rem;transition:opacity .4s;}
+.fab{pointer-events:auto;width:64px;height:64px;border-radius:32px;border:2px solid #fff;background:var(--blue);color:#fff;
+  display:grid;place-items:center;font-size:1.4rem;}
 
-/* モーダル */
-.modal{position:fixed;inset:0;z-index:100;display:none;justify-content:center;align-items:flex-end;background:rgba(8,22,36,.55);backdrop-filter:blur(2px);}
+/* ===== シミュレーションバー ===== */
+.simbar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;z-index:60;
+  background:#1A1A1C;color:#fff;border-top:1px solid #3A3A3D;padding:.4rem .6rem calc(.55rem + env(safe-area-inset-bottom));}
+.simbar h3{margin:0 0 .35rem;font-size:.7rem;font-weight:500;color:#B7BEC6;display:flex;align-items:center;gap:.35rem;}
+.sim-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.4rem;}
+.sim-btn{background:#2A2A2E;border:1px solid #45454A;color:#E4E8EC;border-radius:var(--r-ctl);padding:.4rem .2rem;
+  font-size:.7rem;font-weight:500;line-height:1.3;display:flex;flex-direction:column;align-items:center;gap:.2rem;min-height:50px;justify-content:center;}
+.sim-btn.active{background:var(--blue);border-color:#4E9BEC;color:#fff;font-weight:700;}
+
+/* ===== モーダル ===== */
+.modal{position:fixed;inset:0;z-index:100;display:none;justify-content:center;align-items:flex-end;background:rgba(26,26,28,.5);}
 .modal.open{display:flex;}
-.sheet{width:100%;max-width:480px;background:var(--bg);border-radius:22px 22px 0 0;max-height:88vh;display:flex;flex-direction:column;animation:up .25s ease-out;}
-@keyframes up{from{transform:translateY(24px);opacity:.5;}to{transform:none;opacity:1;}}
-.sheet-head{display:flex;align-items:center;gap:.6rem;padding:.9rem 1rem;background:var(--navy);color:#fff;border-radius:22px 22px 0 0;}
-.sheet-head h2{margin:0;font-size:1.05rem;font-weight:900;flex:1;}
-.close-btn{background:rgba(255,255,255,.16);border:0;color:#fff;width:40px;height:40px;border-radius:99px;font-size:1.1rem;}
+.sheet{width:100%;max-width:480px;background:var(--bg);border-radius:var(--r-card) var(--r-card) 0 0;max-height:88vh;display:flex;flex-direction:column;}
+.sheet-head{display:flex;align-items:center;gap:.6rem;padding:.9rem 1rem;background:var(--navy);color:#fff;border-radius:var(--r-card) var(--r-card) 0 0;}
+.sheet-head h2{margin:0;font-size:1.02rem;font-weight:700;flex:1;}
+.close-btn{background:transparent;border:1px solid #4E7EA8;color:#fff;width:44px;height:44px;border-radius:var(--r-ctl);font-size:1.05rem;}
 .sheet-body{padding:1rem;overflow-y:auto;}
 
-.chat{flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:.7rem;background:var(--bg);min-height:220px;}
-.msg{max-width:84%;padding:.7rem .9rem;border-radius:16px;font-size:1rem;line-height:1.65;}
-.msg.ai{background:#fff;border:1px solid var(--border);border-bottom-left-radius:4px;align-self:flex-start;}
-.msg.me{background:var(--blue);color:#fff;border-bottom-right-radius:4px;align-self:flex-end;}
-.quick{display:flex;gap:.4rem;flex-wrap:wrap;padding:.6rem .8rem 0;background:#fff;border-top:1px solid var(--border);}
-.quick button{background:var(--sky);border:2px solid #BFDCF8;color:var(--navy);border-radius:999px;padding:.45rem .8rem;font-size:.9rem;font-weight:800;}
-.chat-foot{display:flex;align-items:center;gap:.6rem;padding:.7rem .8rem calc(.8rem + env(safe-area-inset-bottom));background:#fff;}
-.mic{width:64px;height:64px;border-radius:99px;border:0;background:var(--blue);color:#fff;font-size:1.4rem;flex:none;}
+.chat{flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:.8rem;background:var(--bg);min-height:200px;}
+.msg{max-width:85%;padding:.8rem .9rem;border-radius:var(--r-ctl);font-size:1rem;line-height:1.7;}
+.msg.ai{background:#fff;border:1px solid var(--border);align-self:flex-start;}
+.msg.me{background:var(--blue);color:#fff;align-self:flex-end;}
+.msg .speak{display:flex;align-items:center;gap:.35rem;font-size:.75rem;color:var(--muted);font-weight:700;margin-bottom:.3rem;}
+.typing span{display:inline-block;width:7px;height:7px;background:#8A94A0;border-radius:99px;margin-right:4px;animation:bounce 1s infinite;}
+.typing span:nth-child(2){animation-delay:.15s;} .typing span:nth-child(3){animation-delay:.3s;}
+@keyframes bounce{50%{transform:translateY(-5px);}}
+.quick{display:flex;gap:.45rem;flex-wrap:wrap;padding:.7rem .8rem 0;background:#fff;border-top:1px solid var(--border);}
+.quick button{background:#fff;border:1px solid var(--border-strong);color:var(--blue-dark);border-radius:var(--r-ctl);padding:.5rem .8rem;font-size:.9rem;font-weight:700;min-height:44px;}
+.chat-foot{display:flex;align-items:center;gap:.7rem;padding:.8rem .8rem calc(.8rem + env(safe-area-inset-bottom));background:#fff;border-top:1px solid var(--border);}
+.mic{width:60px;height:60px;border-radius:30px;border:0;background:var(--blue);color:#fff;font-size:1.3rem;flex:none;}
+.mic.listening{background:var(--warn);}
+.mic-label{font-size:.95rem;font-weight:500;color:var(--muted);}
 
-.toast-zone{position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;z-index:200;padding:.6rem .85rem;pointer-events:none;display:flex;flex-direction:column;gap:.5rem;}
-.toast{
-  background:#0E2233;color:#fff;border-radius:14px;padding:.7rem .9rem;font-size:.92rem;font-weight:700;
-  box-shadow:0 8px 24px rgba(0,0,0,.3);display:flex;gap:.55rem;align-items:flex-start;animation:down .25s ease-out;
-}
-.toast.ok{background:#0E8A4F;}
-.toast.warn{background:var(--warn);}
-@keyframes down{from{transform:translateY(-14px);opacity:0;}to{transform:none;opacity:1;}}
+.toast-zone{position:fixed;bottom:calc(var(--bar-h) + 92px);left:50%;transform:translateX(-50%);width:100%;max-width:480px;
+  z-index:70;padding:0 1rem;pointer-events:none;display:flex;flex-direction:column;gap:.5rem;}
+.toast{background:#1A1A1C;color:#fff;border-radius:var(--r-ctl);padding:.75rem .9rem;font-size:.92rem;font-weight:500;
+  display:flex;gap:.55rem;align-items:flex-start;}
+.toast.ok{background:#0B5C37;}
 
-.kv{display:flex;justify-content:space-between;gap:.6rem;padding:.5rem 0;border-bottom:1px dashed var(--border);font-size:.95rem;}
+.onboard{position:fixed;inset:0;z-index:300;background:var(--navy);display:none;align-items:center;justify-content:center;padding:1.2rem;}
+.onboard.open{display:flex;}
+.ob-card{width:100%;max-width:420px;background:#fff;border-radius:var(--r-card);padding:1.6rem 1.2rem;text-align:center;}
+.ob-card h2{margin:0 0 .4rem;font-size:1.4rem;font-weight:700;}
+.ob-card p{margin:0 0 1.2rem;color:var(--muted);font-size:.98rem;}
+.ob-sample{background:var(--bg);border:1px solid var(--border);border-radius:var(--r-ctl);padding:.8rem;margin-bottom:1.2rem;font-weight:700;font-size:1.2rem;}
+
+.kv{display:flex;justify-content:space-between;gap:.8rem;padding:.6rem 0;border-bottom:1px solid var(--border);font-size:.95rem;}
 .kv:last-child{border-bottom:0;}
-.kv b{font-weight:900;}
-.spinner{width:22px;height:22px;border:3px solid #CFE0EE;border-top-color:var(--blue);border-radius:99px;animation:spin .8s linear infinite;display:inline-block;vertical-align:-5px;}
+.kv span{color:var(--muted);}
+.kv b{font-weight:700;text-align:right;}
+.spinner{width:20px;height:20px;border:2px solid var(--border-strong);border-top-color:var(--blue);border-radius:99px;animation:spin .8s linear infinite;display:inline-block;vertical-align:-4px;}
 @keyframes spin{to{transform:rotate(360deg);}}
-.mt{margin-top:.8rem;}
-.center{text-align:center;}
+.footer-note{font-size:.76rem;color:var(--muted);text-align:center;padding:.2rem 1rem 0;}
 </style>
 </head>
 <body>
 
-<div class="toast-zone" id="toastZone"></div>
+<div class="onboard" id="onboard" role="dialog" aria-modal="true" aria-label="文字サイズの設定">
+  <div class="ob-card">
+    <h2>文字を大きくしますか？</h2>
+    <p>あとから「設定」でいつでも変えられます。</p>
+    <div class="ob-sample">本日 9:30 循環器内科</div>
+    <button class="btn btn-primary btn-xl" id="obBig">大きい文字にする</button>
+    <button class="btn btn-quiet mt" id="obNo">このままでよい</button>
+  </div>
+</div>
+
+<div class="toast-zone" id="toastZone" aria-live="polite"></div>
 
 <div class="app">
-  <!-- A. アクセシビリティバー（誤タップしにくい位置に配置） -->
-  <div class="a11y-bar">
-    <button class="a11y-btn" id="easyToggle"><i class="fa-solid fa-text-height"></i> 文字を大きくする</button>
-  </div>
 
-  <header class="app-header">
-    <div class="brand">
-      <i class="fa-solid fa-house-medical"></i>
-      <div>
+  <div class="top" id="top">
+    <header class="app-header">
+      <div class="head-home" id="headHome">
         <div class="brand-sub">近畿大学病院</div>
         <div class="brand-title">スマート病院通院ナビ</div>
+        <div class="header-controls">
+          <label class="user-select" for="familySelect">
+            <i class="fa-solid fa-user-group" aria-hidden="true"></i>
+            <select id="familySelect" aria-label="表示する人を切り替える">
+              <option value="self">近大 太郎 さん（本人）</option>
+              <option value="mother">近大 花子 さん（母）</option>
+              <option value="son">近大 みなと さん（長男）</option>
+            </select>
+          </label>
+          <button class="hbtn" id="helpBtn"><i class="fa-regular fa-circle-question"></i>設定</button>
+        </div>
       </div>
-    </div>
-    <div class="header-controls">
-      <label class="user-select" for="familySelect">
-        <i class="fa-solid fa-user-group"></i>
-        <select id="familySelect">
-          <option value="self">近大 太郎 さん（本人）</option>
-          <option value="mother">近大 花子 さん（母）</option>
-        </select>
-      </label>
-      <button class="hbtn" id="helpBtn"><i class="fa-regular fa-circle-question"></i> 使い方</button>
-    </div>
-  </header>
+      <div class="head-sub" id="headSub">
+        <button class="back-btn" id="backBtn"><i class="fa-solid fa-arrow-left"></i> もどる</button>
+        <h1 id="subTitle">画面名</h1>
+        <button class="hbtn" id="cardBtnSub" aria-label="診察券を表示"><i class="fa-solid fa-barcode"></i>診察券</button>
+      </div>
+    </header>
+    <div class="companion" id="companionBar"></div>
+    <button class="status-strip" id="statusStrip"></button>
+  </div>
 
-  <div class="alert-zone" id="alertZone"></div>
+  <!-- ==================== ホーム ==================== -->
+  <main class="screen active" id="scr-home">
+    <section class="guide" id="guideCard" aria-live="polite"></section>
 
-  <main>
-    <!-- B. 本日の受診ガイド（動的カード） -->
-    <section class="guide" id="guideCard"></section>
+    <!-- 診察券：常時表示。受付・検査・会計・自動運転バスの共通キー -->
+    <section class="idcard">
+      <div class="idcard-head">
+        <i class="fa-solid fa-barcode" style="color:var(--muted)"></i>
+        <h2 data-easy="しんさつけん">診察券</h2>
+        <span class="num" id="cardNo">No. 4821-9073</span>
+      </div>
+      <div class="idcard-body">
+        <div class="barcode"><div class="bars" id="bars"></div><div class="num">KDU 4821 9073</div></div>
+        <p class="use" id="cardUse">受付・検査・支払い・バスの乗車に使えます。</p>
+        <button class="btn btn-quiet mt" id="cardBig">大きく表示する</button>
+      </div>
+    </section>
 
-    <!-- C. メインボタン -->
-    <nav class="main-nav" id="mainNav">
-      <button class="nav-btn active" data-view="v1">
-        <i class="fa-solid fa-route"></i>
+    <section class="card hide" id="companionCard">
+      <div class="card-head"><i class="fa-regular fa-bell"></i><h2>付き添いの通知</h2></div>
+      <div class="switch-row">
+        <button class="switch on" id="notifySwitch" aria-pressed="true" aria-label="通知をこの端末で受け取る"></button>
+        <div><div style="font-weight:700;" id="notifyText">呼び出しをこの端末でも受け取る</div>
+        <div style="font-size:.85rem;color:var(--muted);" id="notifySub"></div></div>
+      </div>
+    </section>
+
+    <!-- 来院方法は選ばせず、すべて並べて表示する -->
+    <section class="card">
+      <div class="card-head"><i class="fa-solid fa-clock"></i><h2 id="transportTitle">病院への行き方と時刻</h2></div>
+      <ul class="list" id="transportList"></ul>
+    </section>
+
+    <nav class="main-nav" aria-label="メインメニュー">
+      <button class="nav-btn" data-screen="v1">
+        <i class="fa-solid fa-route mainico"></i>
         <span class="t" data-easy="きょう やること">本日の受診ガイド</span>
-        <span class="s detail">ルート・待ち状況</span>
+        <i class="fa-solid fa-chevron-right chev"></i>
       </button>
-      <button class="nav-btn" data-view="v2">
-        <i class="fa-solid fa-notes-medical"></i>
-        <span class="t" data-easy="よやくの かくにん">予約確認 &amp; AI問診</span>
-        <span class="s detail">24時間仮受付・症状日記</span>
+      <button class="nav-btn" data-screen="v2">
+        <i class="fa-regular fa-calendar-check mainico"></i>
+        <span class="t" data-easy="よやくの こと">予約・仮受付</span>
+        <i class="fa-solid fa-chevron-right chev"></i>
       </button>
-      <button class="nav-btn" data-view="v3">
-        <i class="fa-solid fa-wallet"></i>
-        <span class="t" data-easy="おかねの はらいかた">お支払い設定</span>
-        <span class="s detail">プリペイド・キャッシュレス</span>
+      <button class="nav-btn" data-screen="v3">
+        <i class="fa-regular fa-credit-card mainico"></i>
+        <span class="t" data-easy="おかねの こと">お支払い</span>
+        <i class="fa-solid fa-chevron-right chev"></i>
       </button>
-      <button class="nav-btn" data-view="v4">
-        <i class="fa-solid fa-comment-medical"></i>
-        <span class="t" data-easy="おくすりと なかま">医療SNS &amp; お薬記録</span>
-        <span class="s detail">コミュニティ・処方履歴</span>
+      <button class="nav-btn" data-screen="v4">
+        <i class="fa-solid fa-file-medical mainico"></i>
+        <span class="t" data-easy="おくすりと きろく">お薬 &amp; 医療記録</span>
+        <i class="fa-solid fa-chevron-right chev"></i>
       </button>
     </nav>
 
-    <!-- ① 受診ガイド -->
-    <section class="view active" id="v1">
-      <div class="card">
-        <div class="card-head"><i class="fa-solid fa-location-crosshairs"></i><h2 data-easy="いる ばしょを しらせる">位置情報 自動チェックイン</h2></div>
-        <div class="card-body">
-          <p class="detail" style="margin:0 0 .7rem;color:var(--muted);font-size:.92rem;">
-            敷地内のビーコンで現在地を判定し、診療科の前を通るだけで受付が完了します。
-          </p>
-          <div id="checkinList"></div>
-          <button class="btn btn-primary mt" id="checkinBtn"><i class="fa-solid fa-map-location-dot"></i> 今いる場所でチェックイン</button>
+    <div class="card" id="recordCard">
+      <div class="card-head"><i class="fa-regular fa-pen-to-square"></i><h2 data-easy="からだの きろく">からだの記録</h2></div>
+      <div class="card-body">
+        <div id="recToday"></div>
+        <div class="rec-label">今日の調子</div>
+        <div class="seg" id="recMood">
+          <button aria-pressed="false" data-v="よい">よい</button>
+          <button aria-pressed="false" data-v="ふつう">ふつう</button>
+          <button aria-pressed="false" data-v="わるい">わるい</button>
+        </div>
+
+        <div class="rec-label">気になるところ</div>
+        <div class="tags" id="recParts">
+          <button aria-pressed="false">頭</button><button aria-pressed="false">むね</button>
+          <button aria-pressed="false">おなか</button><button aria-pressed="false">背中・腰</button>
+          <button aria-pressed="false">ひざ・足</button><button aria-pressed="false">その他</button>
+        </div>
+
+        <div class="rec-label">どんな感じ</div>
+        <div class="tags" id="recSymptoms">
+          <button aria-pressed="false">痛い</button><button aria-pressed="false">腫れている</button>
+          <button aria-pressed="false">しびれる</button><button aria-pressed="false">息が切れる</button>
+          <button aria-pressed="false">めまい</button><button aria-pressed="false">眠れない</button>
+        </div>
+
+        <div class="rec-label">つらさ</div>
+        <div class="levels" id="recLevel">
+          <button aria-pressed="false">1</button><button aria-pressed="false">2</button>
+          <button aria-pressed="false">3</button><button aria-pressed="false">4</button><button aria-pressed="false">5</button>
+        </div>
+        <div class="level-note"><span>軽い</span><span>とてもつらい</span></div>
+
+        <div class="rec-label">ひとこと（なくてもかまいません）</div>
+        <div class="memo-row">
+          <input class="inp" id="recMemo" type="text" placeholder="例：階段がつらい" aria-label="ひとこと">
+          <button id="recMic" aria-label="声で入力する"><i class="fa-solid fa-microphone"></i></button>
+        </div>
+
+        <button class="btn btn-primary mt" id="recSave">今日の記録をつける</button>
+      </div>
+      <ul class="list" id="recList"></ul>
+      <div class="card-body">
+        <button class="btn btn-quiet" id="diaryBtn">記録を受診メモにまとめる</button>
+        <div id="diaryResult"></div>
+      </div>
+    </div>
+
+    <p class="footer-note">コンテスト提出用のデモです</p>
+  </main>
+
+  <!-- ==================== ① 受診ガイド ==================== -->
+  <main class="screen" id="scr-v1">
+    <div class="card">
+      <div class="card-head">
+        <i class="fa-solid fa-list-ol"></i><h2 data-easy="まわる じゅんばん">本日まわる順番</h2>
+        <button class="btn btn-sm btn-quiet" id="refreshWait" style="margin-left:auto;"><i class="fa-solid fa-rotate"></i> 更新</button>
+      </div>
+      <ul class="list" id="routeList"></ul>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><i class="fa-solid fa-location-dot"></i><h2 data-easy="うけつけの きろく">自動チェックイン</h2></div>
+      <div id="checkinList"></div>
+      <div class="card-body">
+        <button class="btn btn-quiet" id="checkinBtn"><i class="fa-solid fa-map-location-dot"></i> 今いる場所でチェックイン</button>
+      </div>
+    </div>
+  </main>
+
+  <!-- ==================== ② 予約 & 受診メモ ==================== -->
+  <main class="screen" id="scr-v2">
+    <div class="card">
+      <div class="card-head"><i class="fa-regular fa-calendar"></i><h2 data-easy="よやくの よてい">これからの予約</h2></div>
+      <ul class="list" id="apptList"></ul>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><i class="fa-regular fa-clock"></i><h2 data-easy="よやくを とる">24時間 仮受付</h2></div>
+      <div class="card-body">
+        <label class="field"><span class="lb">診療科</span>
+          <select class="inp" id="deptSel">
+            <option>循環器内科（1号館3階 3B）</option>
+            <option>整形外科（1号館2階 2G）</option>
+            <option>皮膚科（1号館4階 4G）</option>
+            <option>眼科（1号館4階 4E）</option>
+          </select>
+        </label>
+        <label class="field"><span class="lb">希望日</span><input class="inp" type="date" id="dateSel"></label>
+        <label class="field"><span class="lb">希望の時間帯</span>
+          <select class="inp" id="timeSel"><option>午前（8:45〜11:30）</option><option>午後（13:30〜16:30）</option></select>
+        </label>
+        <button class="btn btn-primary" id="tempBtn">仮受付をする</button>
+        <div id="tempResult"></div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ==================== ③ お支払い ==================== -->
+  <main class="screen" id="scr-v3">
+    <div class="card">
+      <div class="card-head"><i class="fa-regular fa-credit-card"></i><h2 data-easy="はらいかた">お支払い方法</h2></div>
+      <div class="card-body">
+        <span class="badge-on"><i class="fa-solid fa-check"></i> クレジットカード 登録ずみ</span>
+        <p style="margin:.7rem 0 0;font-size:.98rem;">診療費は後日、登録のカードから引き落とされます。会計を待たずにお帰りいただけます。</p>
+        <div class="kv mt"><span>登録カード</span><b>VISA •••• 4821</b></div>
+        <div class="kv"><span>本日の診療費</span><b id="dueAmount">¥2,340</b></div>
+        <div class="kv"><span>引き落とし予定</span><b id="dueDate">11月10日</b></div>
+        <div class="note plain mt detail">
+          カード未登録の場合は、会計の処理が終わるまでお待ちいただき、自動支払機または会計窓口でお支払いいただきます。
         </div>
       </div>
+    </div>
 
-      <div class="card mt">
-        <div class="card-head">
-          <i class="fa-solid fa-hourglass-half"></i>
-          <h2 data-easy="どれくらい まつか">各科・検査・会計の待ち状況</h2>
-          <button class="btn btn-sm btn-ghost" id="refreshWait" style="margin-left:auto;"><i class="fa-solid fa-rotate"></i> 更新</button>
-        </div>
-        <ul class="list" id="waitList"></ul>
-      </div>
-
-      <div class="card mt">
-        <div class="card-head"><i class="fa-solid fa-triangle-exclamation" style="color:var(--warn)"></i><h2 data-easy="はらい わすれ ぼうし">帰り忘れ防止アラート</h2></div>
-        <div class="card-body">
-          <p class="detail" style="margin:0 0 .7rem;color:var(--muted);font-size:.92rem;">会計や薬の受け取りが残ったまま出口に近づくと警告します。</p>
-          <button class="btn btn-warn" id="demoAlertBtn"><i class="fa-solid fa-bell"></i> 警告のデモを見る</button>
-        </div>
-      </div>
-    </section>
-
-    <!-- ② 予約確認 & AI問診 -->
-    <section class="view" id="v2">
-      <div class="card">
-        <div class="card-head"><i class="fa-regular fa-calendar-check"></i><h2 data-easy="よやくの よてい">これからの予約</h2></div>
-        <ul class="list" id="apptList"></ul>
-      </div>
-      <div class="card mt">
-        <div class="card-head"><i class="fa-solid fa-clock"></i><h2 data-easy="よやくを とる">24時間 仮受付</h2></div>
-        <div class="card-body">
-          <div class="note detail">夜中でも仮受付ができます。翌朝6時に自動で本受付になります。</div>
-          <div class="mt">
-            <label class="field"><span class="lb">診療科</span><select class="inp" id="deptSel"><option>内科</option><option>整形外科</option></select></label>
-            <label class="field"><span class="lb">希望日</span><input class="inp" type="date" id="dateSel"></label>
-            <button class="btn btn-primary" id="tempBtn">仮受付をする</button>
+    <div class="card">
+      <div class="card-head"><i class="fa-solid fa-coins"></i><h2 data-easy="そのほかの はらいかた">その他の支払い方法</h2></div>
+      <div class="card-body">
+        <div class="balance">
+          <div class="k" data-easy="のこりの おかね">病院プリペイド 残高</div>
+          <div class="v" id="balance">¥3,200</div>
+          <div class="chips">
+            <button class="chip-btn" data-charge="3000">+3,000円</button>
+            <button class="chip-btn" data-charge="5000">+5,000円</button>
+            <button class="chip-btn" data-charge="10000">+10,000円</button>
           </div>
-          <div id="tempResult"></div>
         </div>
+        <button class="btn btn-dark mt" id="applePayBtn"><i class="fa-brands fa-apple"></i> Apple Pay で今すぐ支払う</button>
+        <div id="payResult"></div>
       </div>
-      <div class="card mt">
-        <div class="card-head"><i class="fa-solid fa-wand-magic-sparkles"></i><h2 data-easy="からだの メモ">AI症状日記</h2></div>
-        <div class="card-body">
-          <textarea class="inp" id="diary">10/2 朝起きたとき、右のひざが痛い。</textarea>
-          <button class="btn btn-primary mt" id="diaryBtn">AIに問診票を作ってもらう</button>
-          <div id="diaryResult"></div>
-        </div>
-      </div>
-    </section>
+    </div>
 
-    <!-- ③ お支払い設定（オンオフを廃止し、登録＝利用に特化） -->
-    <section class="view" id="v3">
-      <div class="card">
-        <div class="card-head"><i class="fa-solid fa-credit-card"></i><h2 data-easy="じどうで はらう">らくらく会計（自動精算）</h2></div>
-        <div class="card-body">
-          <div class="note ok" style="margin-bottom:1rem;">
-            <b><i class="fa-solid fa-check"></i> 自動精算をご利用いただけます</b><br>
-            <span class="detail">診察が終わると自動でお支払いが完了し、窓口に寄らずそのままお帰りいただけます。</span>
-          </div>
-          <div class="kv"><span>登録カード</span><b>VISA •••• 4821</b></div>
-          <div class="kv detail"><span>上限額</span><b>1回 50,000円</b></div>
-        </div>
-      </div>
+    <div class="card">
+      <div class="card-head"><i class="fa-solid fa-receipt"></i><h2 data-easy="はらった きろく">お支払い履歴</h2></div>
+      <ul class="list" id="payHistory"></ul>
+    </div>
+  </main>
 
-      <div class="card mt">
-        <div class="card-head"><i class="fa-solid fa-coins"></i><h2 data-easy="のこりの おかね">病院プリペイド</h2></div>
-        <div class="card-body">
-          <div class="balance">
-            <div class="k" data-easy="のこりの おかね">現在の残高</div>
-            <div class="v" id="balance">¥3,200</div>
-            <div class="chips">
-              <button class="chip-btn" data-charge="3000">+3,000円</button>
-            </div>
-          </div>
-        </div>
+  <!-- ==================== ④ お薬 & 医療記録 ==================== -->
+  <main class="screen" id="scr-v4">
+    <div class="card">
+      <div class="card-head"><i class="fa-solid fa-pills"></i><h2 data-easy="のむ おくすり">今のお薬</h2></div>
+      <ul class="list" id="medList"></ul>
+    </div>
+    <div class="card">
+      <div class="card-head"><i class="fa-regular fa-file-lines"></i><h2 data-easy="びょういんに きた きろく">受診履歴</h2></div>
+      <ul class="list" id="historyList"></ul>
+    </div>
+    <div class="card">
+      <div class="card-head"><i class="fa-solid fa-triangle-exclamation" style="color:var(--warn)"></i><h2 data-easy="からだに あわない もの">アレルギー</h2></div>
+      <div class="card-body">
+        <div class="note warn"><b>ペニシリン系抗菌薬</b>：発疹の既往あり<br><b>そば</b>：じんましん</div>
       </div>
-
-      <div class="card mt">
-        <div class="card-head"><i class="fa-solid fa-receipt"></i><h2 data-easy="はらった きろく">お支払い履歴</h2></div>
-        <ul class="list" id="payHistory"></ul>
-      </div>
-    </section>
-
-    <!-- ④ 医療SNS & お薬・カルテ -->
-    <section class="view" id="v4">
-      <div class="card">
-        <div class="card-head"><i class="fa-solid fa-earth-asia"></i><h2 data-easy="おなじ びょうきの なかま">医療SNSコミュニティ</h2></div>
-        <div id="feed"></div>
-      </div>
-      <div class="card mt">
-        <div class="card-head"><i class="fa-solid fa-pills"></i><h2 data-easy="のむ おくすり">今のお薬</h2></div>
-        <ul class="list" id="medList"></ul>
-      </div>
-      <div class="card mt">
-        <div class="card-head"><i class="fa-solid fa-file-waveform"></i><h2 data-easy="びょういんに きた きろく">受診履歴</h2></div>
-        <ul class="list" id="historyList"></ul>
-      </div>
-    </section>
-
-    <p class="footer-note">これはコンテスト提出用のデモです。</p>
+    </div>
   </main>
 </div>
 
-<!-- D. AIコンシェルジュ -->
 <div class="fab-wrap">
-  <div class="fab-bubble" id="fabBubble">困ったらタップ！</div>
-  <button class="fab" id="fabBtn"><i class="fa-solid fa-headset"></i></button>
+  <div class="fab-bubble" id="fabBubble">困ったらタップ</div>
+  <button class="fab" id="fabBtn" aria-label="お助けAIコンシェルジュを開く"><i class="fa-solid fa-headset"></i></button>
 </div>
 
-<!-- シミュレーションバー -->
 <div class="simbar">
   <h3><i class="fa-solid fa-sliders"></i> 審査員用シミュレーション</h3>
   <div class="sim-grid">
-    <button class="sim-btn active" data-step="home"><i class="fa-solid fa-house"></i>1. 来院前</button>
-    <button class="sim-btn" data-step="arrive"><i class="fa-solid fa-hospital"></i>2. 病院到着</button>
-    <button class="sim-btn" data-step="checkout"><i class="fa-solid fa-yen-sign"></i>3. 会計・帰宅</button>
-    <button class="sim-btn danger" data-step="unpaid"><i class="fa-solid fa-triangle-exclamation"></i>4. 未精算警告</button>
+    <button class="sim-btn active" data-step="none"><i class="fa-regular fa-calendar-xmark"></i>0. 予約なし</button>
+    <button class="sim-btn" data-step="home"><i class="fa-solid fa-house"></i>1. 自宅・移動</button>
+    <button class="sim-btn" data-step="arrive"><i class="fa-solid fa-hospital"></i>2. 到着・ルート</button>
+    <button class="sim-btn" data-step="checkout"><i class="fa-solid fa-yen-sign"></i>3. 診察後・帰宅</button>
   </div>
 </div>
 
-<!-- AI モーダル -->
-<div class="modal" id="aiModal">
+<div class="modal" id="aiModal" role="dialog" aria-modal="true" aria-label="お助けAIコンシェルジュ">
   <div class="sheet" style="height:82vh;">
-    <div class="sheet-head">
-      <i class="fa-solid fa-headset"></i><h2>お助けAIコンシェルジュ</h2>
-      <button class="close-btn" data-close="aiModal"><i class="fa-solid fa-xmark"></i></button>
-    </div>
+    <div class="sheet-head"><i class="fa-solid fa-headset"></i><h2>お助けAIコンシェルジュ</h2>
+      <button class="close-btn" data-close="aiModal" aria-label="閉じる"><i class="fa-solid fa-xmark"></i></button></div>
     <div class="chat" id="chat"></div>
     <div class="quick" id="quick">
       <button>次どこに行けばいい？</button>
+      <button>予約を取りたい</button>
       <button>支払いのやり方は？</button>
-      <button>待ち時間は？</button>
+      <button>待ち時間はどれくらい？</button>
+      <button>1号館と2号館の行き来は？</button>
     </div>
     <div class="chat-foot">
-      <button class="mic" id="micBtn"><i class="fa-solid fa-microphone"></i></button>
-      <span style="font-size:.9rem;font-weight:700;color:var(--muted)" id="micLabel">マイクを押して話しかける</span>
+      <button class="mic" id="micBtn" aria-label="音声で質問する"><i class="fa-solid fa-microphone"></i></button>
+      <span class="mic-label" id="micLabel">マイクを押して話しかけてください</span>
     </div>
   </div>
 </div>
 
-<!-- 使い方モーダル -->
-<div class="modal" id="helpModal">
+<div class="modal" id="helpModal" role="dialog" aria-modal="true" aria-label="設定と使い方">
   <div class="sheet">
-    <div class="sheet-head"><i class="fa-regular fa-circle-question"></i><h2>このアプリの使い方</h2>
-      <button class="close-btn" data-close="helpModal"><i class="fa-solid fa-xmark"></i></button></div>
+    <div class="sheet-head"><i class="fa-solid fa-gear"></i><h2>設定と使い方</h2>
+      <button class="close-btn" data-close="helpModal" aria-label="閉じる"><i class="fa-solid fa-xmark"></i></button></div>
     <div class="sheet-body">
-      <div class="card"><ul class="list">
-        <li><div class="ico"><b>1</b></div><div class="main"><div class="name">病院に着く</div><div class="meta">歩くだけで受付が終わります</div></div></li>
-        <li><div class="ico"><b>2</b></div><div class="main"><div class="name">画面のとおりに進む</div><div class="meta">空いている検査から順にご案内します</div></div></li>
-        <li><div class="ico"><b>3</b></div><div class="main"><div class="name">そのまま帰る</div><div class="meta">お支払いはクレジットカードで自動精算されます</div></div></li>
+      <div class="card">
+        <div class="switch-row">
+          <button class="switch" id="easySwitch" aria-pressed="false" aria-label="大きい文字とやさしい表示"></button>
+          <div><div style="font-weight:700;">大きい文字・やさしい表示</div>
+          <div style="font-size:.85rem;color:var(--muted);">言葉もやさしくなります</div></div>
+        </div>
+      </div>
+      <div class="card mt"><ul class="list">
+        <li><div class="ico">1</div><div class="main"><div class="name">予約をとる</div><div class="meta">夜でも仮受付でき、朝6時に本受付になります</div></div></li>
+        <li><div class="ico">2</div><div class="main"><div class="name">診察券をかざす</div><div class="meta">受付・検査・支払い・バスの乗車に使えます</div></div></li>
+        <li><div class="ico">3</div><div class="main"><div class="name">行き先を確認して進む</div><div class="meta">棟・階・ブロックと矢印の色で案内します</div></div></li>
+        <li><div class="ico">4</div><div class="main"><div class="name">会計を待たずに帰る</div><div class="meta">診療費は後日カードから引き落とされます</div></div></li>
       </ul></div>
       <button class="btn btn-primary mt" data-close="helpModal">とじる</button>
     </div>
   </div>
 </div>
 
-<!-- 乗降券・ルート モーダル -->
-<div class="modal" id="genModal">
+<div class="modal" id="genModal" role="dialog" aria-modal="true">
   <div class="sheet">
     <div class="sheet-head"><i class="fa-solid fa-circle-info"></i><h2 id="genTitle">案内</h2>
-      <button class="close-btn" data-close="genModal"><i class="fa-solid fa-xmark"></i></button></div>
+      <button class="close-btn" data-close="genModal" aria-label="閉じる"><i class="fa-solid fa-xmark"></i></button></div>
     <div class="sheet-body" id="genBody"></div>
   </div>
 </div>
 
 <script>
-const state = { step: 'home', easy: false, paid: false, balance: 3200, due: 2340, user: '近大 太郎' };
-const $ = (s,r=document)=>r.querySelector(s); const $$ = (s,r=document)=>Array.from(r.querySelectorAll(s));
-const yen = n => '¥' + n.toLocaleString('ja-JP');
+/* =========================================================================
+   スマート病院通院ナビ ― デモ用スクリプト
+   院内表記は近畿大学病院の公式フロアマップ（1号館＝外来棟／2号館＝診療棟）に準拠
+   ========================================================================= */
 
-function toast(text, type='', ms=3600){
-  const el = document.createElement('div'); el.className = 'toast ' + type;
-  el.innerHTML = `<i class="fa-solid ${type==='warn'?'fa-triangle-exclamation':type==='ok'?'fa-circle-check':'fa-circle-info'}"></i><div>${text}</div>`;
-  $('#toastZone').appendChild(el);   setTimeout(()=>{ el.style.opacity='0'; setTimeout(()=>el.remove(),400); }, ms); }  function applyEasyText(){   $$('[data-easy]').forEach(el=>{
-    if(!el.dataset.normal) el.dataset.normal = el.textContent;
+const state = {
+  step:'none',      // none（予約なし）/ home / arrive / checkout
+  screen:'home',
+  easy:false,
+  viewing:'self',
+  notify:true,
+  paid:false,       // その場で支払い済みか（通常は後日引き落とし）
+  balance:3200,
+  due:2340,
+  nextBooked:false,   // 次回の予約を取ったか
+};
+
+const PEOPLE={self:{name:'近大 太郎',rel:'本人',no:'4821-9073'},
+              mother:{name:'近大 花子',rel:'母',no:'4821-5510'},
+              son:{name:'近大 みなと',rel:'長男',no:'4821-7284'}};
+
+const ARROW={red:{c:'var(--arw-red)',label:'赤色の矢印'},blue:{c:'var(--arw-blue)',label:'青色の矢印'},
+             green:{c:'var(--arw-green)',label:'緑色の矢印'},yellow:{c:'var(--arw-yellow)',label:'黄色の矢印'}};
+
+/* 行き先：矢印の色と「棟・階・ブロック・名称」を必ずセットで持つ */
+const PLACES={
+  cardio:{name:'循環器内科 診察',easy:'しんさつ',bld:'1号館（外来棟）',fl:'3階',code:'3B',arrow:'blue'},
+  xray:{name:'中央放射線部（レントゲン）',easy:'レントゲンの へや',bld:'2号館（診療棟）',fl:'2階',code:'2S',arrow:'red'},
+  blood:{name:'採血・生理検査',easy:'けつえきを とる へや',bld:'2号館（診療棟）',fl:'3階',code:'3L',arrow:'green'},
+  med:{name:'おくすり受付カウンター',easy:'おくすりを もらう ところ',bld:'2号館（診療棟）',fl:'3階',code:'—',arrow:'yellow'},
+};
+const locOf=p=>`${p.bld} ${p.fl}${p.code!=='—'?' '+p.code:''}`;
+
+let waits=[{id:'cardio',min:10,people:2},{id:'blood',min:35,people:12},{id:'xray',min:3,people:1},{id:'med',min:8,people:5}];
+
+/* 交通：往路・復路それぞれの次発時刻 */
+const TRANSPORT={
+  go:[
+    {n:'自動運転バス',m:'自宅前 → 病院ロータリー（診察券をかざして乗車）',t:'8:52'},
+    {n:'電車・路線バス',m:'最寄り駅 → 病院ロータリー バス停',t:'8:41'},
+    {n:'自家用車',m:'立体駐車場（3階の連絡通路で2号館へ直結）',t:'所要25分'},
+  ],
+  back:[
+    {n:'自動運転バス',m:'病院ロータリー → 自宅前',t:'14:20'},
+    {n:'路線バス',m:'病院ロータリー → 最寄り駅',t:'14:33'},
+    {n:'電車',m:'最寄り駅 発',t:'14:48'},
+  ],
+};
+
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>Array.from(r.querySelectorAll(s));
+const yen=n=>'¥'+n.toLocaleString('ja-JP');
+const waitOf=id=>{const w=waits.find(w=>w.id===id);return w?w.min:0;};
+
+function toast(text,type='',ms=3400){
+  const el=document.createElement('div'); el.className='toast '+type;
+  el.innerHTML=`<i class="fa-solid ${type==='ok'?'fa-circle-check':'fa-circle-info'}"></i><div>${text}</div>`;
+  $('#toastZone').appendChild(el);
+  setTimeout(()=>{el.style.transition='opacity .4s';el.style.opacity='0';setTimeout(()=>el.remove(),400);},ms);
+}
+function waitPill(min){
+  const c=min<=5?'ok':min<=15?'mid':'busy', l=min<=5?'空いています':min<=15?'ふつう':'混雑中';
+  return `<span class="pill ${c}">${l} 約${min}分</span>`;
+}
+/* 矢印ナビ：色ブロックにブロック記号を併記し、色が読めなくても場所が分かるようにする */
+function arrowNav(key){
+  const p=PLACES[key], a=ARROW[p.arrow];
+  return `<div class="arrow-nav">
+    <div class="arrow-mark" style="background:${a.c}"><i class="fa-solid fa-arrow-right"></i><span class="code">${p.code}</span></div>
+    <div><div class="a-main">${locOf(p)}　${p.name}</div>
+    <div class="a-sub">【${a.label}】のさすほうへ</div></div></div>`;
+}
+
+/* ===== かんたんモード ===== */
+function setEasy(on,quiet){
+  state.easy=on;
+  document.documentElement.classList.toggle('easy',on);
+  $('#easySwitch').classList.toggle('on',on);
+  $('#easySwitch').setAttribute('aria-pressed',String(on));
+  renderAll();
+  if(!quiet) toast(on?'大きい文字・やさしい表示にしました':'通常の表示に戻しました','ok',2400);
+}
+$('#easySwitch').addEventListener('click',()=>setEasy(!state.easy));
+$('#obBig').addEventListener('click',()=>{$('#onboard').classList.remove('open');setEasy(true,true);});
+$('#obNo').addEventListener('click',()=>{$('#onboard').classList.remove('open');measureTop();});
+function applyEasyText(root=document){
+  $$('[data-easy]',root).forEach(el=>{
+    if(el.dataset.normal===undefined) el.dataset.normal=el.textContent;
     el.textContent = state.easy ? el.dataset.easy : el.dataset.normal;
   });
 }
 
-$('#easyToggle').addEventListener('click', ()=>{
-  state.easy = !state.easy;
-  document.documentElement.classList.toggle('easy', state.easy);
-  $('#easyToggle').classList.toggle('on', state.easy);
-  renderGuide(); renderWaits(); applyEasyText();
-  toast(state.easy ? '文字を大きくしました' : '通常の表示に戻しました', 'ok');
-});
+/* ===== 画面遷移 ===== */
+const TITLES={v1:'本日の受診ガイド',v2:'予約・仮受付',v3:'お支払い',v4:'お薬と医療記録'};
+function goScreen(id){
+  state.screen=id;
+  $$('.screen').forEach(s=>s.classList.toggle('active',s.id==='scr-'+id));
+  const sub=id!=='home';
+  $('#headHome').classList.toggle('hide',sub);
+  $('#headSub').classList.toggle('show',sub);
+  $('#statusStrip').classList.toggle('show',sub);
+  if(sub) $('#subTitle').textContent=TITLES[id];
+  renderStrip(); window.scrollTo({top:0}); measureTop();
+}
+$$('[data-screen]').forEach(b=>b.addEventListener('click',()=>goScreen(b.dataset.screen)));
+$('#backBtn').addEventListener('click',()=>goScreen('home'));
+$('#statusStrip').addEventListener('click',()=>goScreen('home'));
+function measureTop(){ document.documentElement.style.setProperty('--head-h',$('#top').offsetHeight+'px'); }
+window.addEventListener('resize',measureTop);
 
-function stepper(idx, warn=false){
-  const l = ['移動','受付・検査','診察','会計'];
-  return `<div class="steps">` + l.map((n,i)=>`<div class="step ${i<idx?'done':i===idx?'now':''}"><div class="dot" ${warn&&i===idx?'style="background:var(--warn)"':''}></div><span ${warn&&i===idx?'style="color:var(--warn)"':''}>${n}</span></div>`).join('') + `</div>`;
+function renderStrip(){
+  const el=$('#statusStrip'); let mark='',text='';
+  if(state.step==='none'){ mark='<i class="fa-regular fa-calendar-xmark"></i>'; text='予約はまだありません'; }
+  if(state.step==='home'){ mark='<i class="fa-regular fa-clock"></i>'; text='9:30 循環器内科（1号館3階 3B）'; }
+  if(state.step==='arrive'){ mark=`<i class="fa-solid fa-arrow-right" style="color:${ARROW.red.c}"></i>`;
+    text=`2号館2階 2S レントゲン（赤の矢印・待ち約${waitOf('xray')}分）`; }
+  if(state.step==='checkout'){ mark=`<i class="fa-solid fa-arrow-right" style="color:${ARROW.yellow.c}"></i>`;
+    text='2号館3階 おくすり受付（黄色の矢印）'; }
+  el.innerHTML=`${mark}<span>${text}</span><span class="go">ガイドへ ›</span>`;
 }
 
-function renderGuide(){
-  const g = $('#guideCard'); g.className = 'guide';
-  let html = '';
-
-  if(state.step === 'home'){
-    html = `
-      ${stepper(0)}
-      <div class="guide-top">
-        <span class="chip"><i class="fa-solid fa-house"></i> 今は 自宅・移動中</span>
-        <h1 class="guide-title" data-easy="びょういんへ むかいます">本日 9:30より<br>内科（3階 3B）の診察です</h1>
-        <p class="guide-sub">お気をつけてお越しください。</p>
-      </div>
-      <div class="route" style="background:#fff;border-color:var(--border);">
-        <div class="route-tag" style="color:var(--muted);"><i class="fa-solid fa-car"></i> 来院方法：自動運転バス</div>
-        <p class="route-main" style="margin-top:.4rem">次のバスは <em>8:52</em> に来ます</p>
-        <button class="btn btn-ghost btn-sm mt" data-act="ticket"><i class="fa-solid fa-barcode"></i> 乗降券を表示する</button>
-      </div>
-      <div class="guide-actions">
-        <button class="btn btn-primary detail" data-act="go-v2">今日の予約を詳しく見る</button>
-      </div>`;
+/* ===== 家族切替（付き添い表示） ===== */
+$('#familySelect').addEventListener('change',e=>{
+  state.viewing=e.target.value; renderCompanion(); renderAll();
+  const p=PEOPLE[state.viewing];
+  toast(state.viewing==='self'?'本人の画面に戻りました':p.name+' さんの通院を見守る画面です','ok');
+});
+function renderCompanion(){
+  const bar=$('#companionBar'), card=$('#companionCard'), p=PEOPLE[state.viewing], on=state.viewing!=='self';
+  bar.classList.toggle('show',on); card.classList.toggle('hide',!on);
+  if(on){
+    bar.innerHTML=`<i class="fa-solid fa-user-shield"></i> 付き添い表示：${p.name} さん（${p.rel}）の通院`;
+    $('#notifyText').textContent=p.name+' さんの呼び出しをこの端末でも受け取る';
+    $('#notifySub').textContent=state.notify?'診察・検査・会計の通知が届きます':'通知は届きません';
   }
+  measureTop();
+}
+$('#notifySwitch').addEventListener('click',()=>{
+  state.notify=!state.notify;
+  $('#notifySwitch').classList.toggle('on',state.notify);
+  $('#notifySwitch').setAttribute('aria-pressed',String(state.notify));
+  renderCompanion(); toast(state.notify?'通知を受け取ります':'通知を止めました','ok',2400);
+});
 
-  if(state.step === 'arrive'){
-    html = `
-      ${stepper(1)}
-      <div class="guide-top">
-        <span class="chip"><i class="fa-solid fa-location-dot"></i> 病院に到着・受付ずみ</span>
-        <h1 class="guide-title" data-easy="さきに Xせんけんさへ いきましょう">先に X線検査へ お進みください</h1>
-        <p class="guide-sub">正面玄関で自動チェックインが完了しました。</p>
-      </div>
-      <div class="route">
-        <div class="route-tag"><span class="ai">AI</span> 空き状況から順番を組み替えました</div>
-        <p class="route-main"><em>採血（3L）が混雑中</em>のため、先に<br><em>2号館（診療棟）2階 X線・CT検査（2S）</em>へお進みください</p>
-        <span class="route-wait"><i class="fa-solid fa-person-walking"></i> 2Sへの待ち時間 約3分</span>
-        <div class="arrow-nav" style="border-color:#F5C6CB;">
-          <span class="arrow-color" style="background:#E53935;"><i class="fa-solid fa-arrow-right"></i> 赤色</span>
-          <span class="arrow-text" data-easy="あかい やじるしの ほうへ">矢印のさすほうへ（2号館 2階 2S方面）</span>
-        </div>
+/* ===== 診察券 ===== */
+function drawBars(el){
+  let h=''; for(let i=0;i<52;i++){const w=[2,3,5][Math.floor(Math.random()*3)];h+=`<span style="width:${w}px;height:${60+Math.random()*40}%"></span>`;}
+  el.innerHTML=h;
+}
+function renderCard(){
+  const p=PEOPLE[state.viewing];
+  $('#cardNo').textContent='No. '+p.no;
+  $('.idcard .barcode .num').textContent='KDU '+p.no.replace('-',' ');
+  drawBars($('#bars'));
+}
+function showCardBig(){
+  const p=PEOPLE[state.viewing];
+  $('#genTitle').textContent='診察券';
+  $('#genBody').innerHTML=`<div class="card"><div class="card-body center">
+      <div style="font-weight:700;font-size:1.1rem;">${p.name} さん</div>
+      <div style="color:var(--muted);font-size:.9rem;margin-bottom:.8rem;">No. ${p.no}</div>
+      <div class="barcode big"><div class="bars" id="barsBig"></div><div class="num">KDU ${p.no.replace('-',' ')}</div></div>
+      <p class="use" style="margin-top:.9rem;color:var(--muted);font-size:.9rem;">読み取り機にかざしてください</p>
+    </div></div>
+    <button class="btn btn-primary mt" data-close="genModal">とじる</button>`;
+  drawBars($('#barsBig')); openModal('genModal');
+}
+$('#cardBig').addEventListener('click',showCardBig);
+$('#cardBtnSub').addEventListener('click',showCardBig);
+
+/* ===== 交通（往路・復路の時刻をまとめて表示） ===== */
+function renderTransport(){
+  const back = state.step==='checkout';
+  $('#transportTitle').textContent = back ? 'お帰りの時刻' : '病院への行き方と時刻';
+  const rows = back ? TRANSPORT.back : TRANSPORT.go;
+  $('#transportList').innerHTML=rows.map(r=>`
+    <li><div class="ico"><i class="fa-solid ${r.n.includes('電車')?'fa-train-subway':r.n.includes('車')&&r.n.includes('自家')?'fa-car-side':'fa-bus'}"></i></div>
+    <div class="main"><div class="name">${r.n}</div><div class="meta detail">${r.m}</div></div>
+    <span class="pill time">${r.t.includes(':')?'次 '+r.t:r.t}</span></li>`).join('');
+}
+
+/* ===== 本日の受診ガイド ===== */
+function stepper(i){
+  return `<div class="steps">`+['移動','受付・検査','診察','帰宅'].map((l,n)=>{
+    const c=n<i?'done':n===i?'now':''; return `<div class="step ${c}"><div class="dot"></div>${l}</div>`;
+  }).join('')+`</div>`;
+}
+function renderGuide(){
+  const g=$('#guideCard'); g.className='guide';
+  const who = state.viewing==='self' ? '' :
+    `<span class="chip" style="background:#F1ECF8;color:#4A2A7A;"><i class="fa-solid fa-user-shield"></i> ${PEOPLE[state.viewing].name} さん</span> `;
+  let html='';
+
+  /* --- 0. 予約なし --- */
+  if(state.step==='none'){
+    g.className='guide is-quiet';
+    html=`<div class="guide-top">
+        ${who}<span class="chip">予約</span>
+        <h2 class="guide-title" data-easy="よやくは まだ ありません">予約はまだありません</h2>
+        <p class="guide-sub">夜間でも仮受付ができ、翌朝6時に本受付になります</p>
       </div>
       <div class="status-row">
-        <div class="status-box"><div class="k"><span class="live"></span>内科 診察（3B）</div><div class="v">あと2人</div></div>
-        <div class="status-box"><div class="k">次の場所</div><div class="v">2階<small> 2S</small></div></div>
+        <div class="status-box"><div class="k" data-easy="まえの しんさつ">前回の受診</div><div class="v">9/10<small> 循環器内科</small></div></div>
+        <div class="status-box"><div class="k" data-easy="のこりの おくすり">お薬の残り</div><div class="v">12<small> 日分</small></div></div>
       </div>
-      <div class="guide-actions">
-        <button class="btn btn-primary" data-act="go-v1"><i class="fa-solid fa-hourglass-half"></i> すべての待ち状況を見る</button>
+      <div class="guide-actions"><button class="btn btn-primary" data-act="go-v2">仮受付をする</button></div>`;
+  }
+
+  /* --- 1. 自宅・移動中：行き先の順番はまだ示さない --- */
+  if(state.step==='home'){
+    html=`${stepper(0)}
+      <div class="guide-top">
+        ${who}<span class="chip">本日の予約</span>
+        <h2 class="guide-title" data-easy="9じ30ぷん よやく です">9:30 循環器内科 の予約です</h2>
+        <p class="guide-sub">持ち物は保険証だけです</p>
+      </div>
+      <div class="today-list">
+        <div class="lb">本日の予定</div>
+        <div class="items" data-easy="しんさつ・けつえき・レントゲン">診察・採血・レントゲン</div>
+        <div class="hint">順番は到着後に混雑を見てご案内します</div>
+      </div>
+      <div class="status-row">
+        <div class="status-box"><div class="k" data-easy="でる じかん">出発のめやす</div><div class="v">8:40<small> ごろ</small></div></div>
+        <div class="status-box"><div class="k" data-easy="びょういんに つく">到着のめやす</div><div class="v">9:05<small> ごろ</small></div></div>
       </div>`;
   }
 
-  if(state.step === 'checkout'){
-    g.className = 'guide is-ok';
-    html = `
-      ${stepper(3)}
+  /* --- 2. 到着・最適ルート --- */
+  if(state.step==='arrive'){
+    html=`${stepper(1)}
       <div class="guide-top">
-        <span class="chip"><i class="fa-solid fa-circle-check"></i> 診察が終わりました</span>
-        <h1 class="guide-title" data-easy="おくすりを うけとって かえりましょう">お薬を受け取ってお帰りください</h1>
-        <p class="guide-sub">おくすり受取カウンターでお呼びします。番号は A-24 です。</p>
+        ${who}<span class="chip">到着・受付ずみ</span>
+        <h2 class="guide-title" data-easy="さきに レントゲンへ">先に レントゲンへ お進みください</h2>
+        <p class="guide-sub">入口で自動チェックインしました</p>
       </div>
       <div class="route">
-        <div class="route-tag"><span class="ai">AI</span> 自動精算の結果</div>
-        <p class="route-main"><em>お支払いは完了しています</em></p>
-        <p class="route-why">らくらく会計により窓口に寄らずそのままお帰りいただけます。</p>
-        <span class="route-wait" style="margin-top:.8rem"><i class="fa-solid fa-pills"></i> お薬のお渡しまで 約8分</span>
-        <div class="arrow-nav" style="border-color:#C3E6CB;">
-          <span class="arrow-color" style="background:#28A745;"><i class="fa-solid fa-arrow-right"></i> 緑色</span>
-          <span class="arrow-text">矢印のさすほうへ（おくすり受取カウンター）</span>
-        </div>
+        <p class="route-main"><em>採血が混雑中</em>のため、先に <em>レントゲン</em> へ</p>
+        <span class="route-wait">待ち時間 約${waitOf('xray')}分（採血は約${waitOf('blood')}分）</span>
+        ${arrowNav('xray')}
       </div>
-      <div class="guide-actions">
-        <button class="btn btn-primary" data-act="go-v4"><i class="fa-solid fa-pills"></i> 処方されたお薬を見る</button>
-      </div>`;
+      <div class="status-row">
+        <div class="status-box"><div class="k"><span class="live"></span><span data-easy="しんさつ">循環器内科</span></div><div class="v">あと2人<small>・約${waitOf('cardio')}分</small></div></div>
+        <div class="status-box"><div class="k" data-easy="そのあと">そのあと</div><div class="v">3L<small> 採血</small></div></div>
+      </div>
+      <div class="guide-actions"><button class="btn btn-primary" data-act="go-v1">まわる順番を見る</button></div>`;
   }
 
-  if(state.step === 'unpaid'){
-    g.className = 'guide is-warn';
-    html = `
-      ${stepper(3, true)}
+  /* --- 3. 診察後・帰宅 --- */
+  if(state.step==='checkout'){
+    g.className='guide is-ok';
+    html=`${stepper(3)}
       <div class="guide-top">
-        <span class="chip"><i class="fa-solid fa-triangle-exclamation"></i> 出口に近づいています</span>
-        <h1 class="guide-title" data-easy="おくすりの うけとりが まだです">お薬の受け取りが完了していません</h1>
+        ${who}<span class="chip">診察が終わりました</span>
+        <h2 class="guide-title" data-easy="おくすりを うけとって かえりましょう">お薬を受け取ってお帰りください</h2>
+        <p class="guide-sub">番号札 A-24 でお呼びします</p>
       </div>
-      <div class="route" style="background:linear-gradient(135deg,#FFF1F0,#FDE3E1);border-color:#F3C4C1;">
-        <div class="route-tag" style="color:var(--warn);"><span class="ai" style="background:var(--warn);">!</span> 忘れ物のお知らせ</div>
-        <p class="route-main">お薬（A-24）のお渡し準備ができています</p>
-        <p class="route-why detail">※お会計（${yen(state.due)}）は、らくらく会計で精算完了済みです。</p>
+      <div class="route">
+        <p class="route-main">本日の診療費 <em>${yen(state.due)}</em> は${state.paid?'お支払いずみです':'後日カードから引き落とされます'}</p>
+        <span class="route-wait">お薬のお渡しまで 約${waitOf('med')}分</span>
+        ${arrowNav('med')}
+      </div>
+      <div class="status-row">
+        <div class="status-box"><div class="k" data-easy="つぎの しんさつ">次回の受診</div><div class="v" id="nextVisit">${state.nextBooked?'11/6<small> 9:30</small>':'まだ<small> 未定</small>'}</div></div>
+        <div class="status-box"><div class="k" data-easy="のこりの おくすり">お薬の残り</div><div class="v">14<small> 日分</small></div></div>
       </div>
       <div class="guide-actions">
-        <button class="btn btn-warn" data-act="go-v4">お薬の状況を確認する</button>
+        ${state.nextBooked?'':'<button class="btn btn-primary" data-act="go-v2">次回の仮受付をする</button>'}
+        <button class="btn btn-quiet" data-act="go-v4">処方されたお薬を見る</button>
       </div>`;
   }
 
-  g.innerHTML = html; applyEasyText();
+  g.innerHTML=html; applyEasyText(g); renderStrip();
 }
+$('#guideCard').addEventListener('click',e=>{
+  const b=e.target.closest('[data-act]'); if(!b) return;
+  if(b.dataset.act.startsWith('go-')) goScreen(b.dataset.act.slice(3));
+});
 
+/* ===== シミュレーションバー ===== */
 function setStep(step){
-  state.step = step;
-  $$('.sim-btn').forEach(b=>b.classList.toggle('active', b.dataset.step === step));   renderGuide();      if(step==='home'){ toast('自動運転バスが 8:52 に到着します'); switchView('v1'); }   if(step==='arrive'){ toast('正面玄関で自動チェックインしました', 'ok'); switchView('v1'); }   if(step==='checkout'){ state.paid = true; renderPay(); toast('らくらく会計で精算が完了しました', 'ok'); switchView('v1'); }   if(step==='unpaid'){ toast('出口に近づいています。お薬の受け取りが残っています', 'warn', 5000); switchView('v1'); } }  function switchView(id){   $$
-('.view').forEach(v=>v.classList.toggle('active', v.id === id));
-  $$('.nav-btn').forEach(b=>b.classList.toggle('active', b.dataset.view === id)); } $$
-('.nav-btn').forEach(b=>b.addEventListener('click', ()=>switchView(b.dataset.view)));
-
-$('#guideCard').addEventListener('click', e=>{
-  const b = e.target.closest('[data-act]'); if(!b) return;
-  const a = b.dataset.act;
-  if(a==='ticket') showTicketModal();
-  if(a.startsWith('go-')) switchView(a.replace('go-',''));
-});
-
-function showTicketModal(){
-  $('#genTitle').textContent = 'バス乗降券';
-  $('#genBody').innerHTML = `
-    <div class="ticket">
-      <div class="who">${state.user} さん・医療モビリティ</div>
-      <div class="line">近大病院シャトル 8:52発</div>
-      <div class="barcode"><div class="bars" id="barsModal"></div><div class="num">KDU-4821-9073</div></div>
-    </div>
-    <button class="btn btn-primary mt" data-close="genModal">とじる</button>`;
-  let h=''; for(let i=0;i<48;i++) h+=`<span style="width:${[2,3,5][i%3]}px;height:${60+Math.random()*40}%"></span>`;
-  $('#barsModal').innerHTML = h; openModal('genModal');
+  state.step=step;
+  $$('.sim-btn').forEach(b=>b.classList.toggle('active',b.dataset.step===step));
+  if(step==='none'){ state.paid=false; state.nextBooked=false; toast('予約はまだありません'); }
+  if(step==='home'){ state.paid=false; toast('本日 9:30 循環器内科の予約があります'); }
+  if(step==='arrive'){ state.paid=false; toast('診察券で自動チェックインしました（循環器内科 受付完了）','ok');
+    setTimeout(()=>toast('AIが順番を組み替えました：先に2号館2階 2S レントゲンへ'),1300); }
+  if(step==='checkout'){
+    if(!state.paid && !payments.some(p=>p.d==='10月8日')) addPayment('後日引き落とし（VISA •••• 4821）',state.due);
+    toast('診療費 '+yen(state.due)+' は後日カードから引き落とされます','ok');
+  }
+  goScreen('home'); renderAll();
 }
+$$('.sim-btn').forEach(b=>b.addEventListener('click',()=>setStep(b.dataset.step)));
 
-let waits = [
-  {n:'内科 診察（3B）', p:'3階 3B', w:2, m:10, i:'fa-stethoscope'},
-  {n:'中央臨床検査部（採血）', p:'3階 3L', w:12, m:35, i:'fa-droplet'},
-  {n:'中央放射線部（X線・CT）', p:'2階 2S', w:1, m:3, i:'fa-x-ray'}
+/* ===== ① まわる順番・チェックイン ===== */
+function renderRoute(){
+  if(state.step==='none'||state.step==='home'){
+    $('#routeList').innerHTML=`<li><div class="empty">${state.step==='none'?'本日の予定はありません':'まわる順番は到着後にご案内します'}</div></li>`;
+    return;
+  }
+  const order=['xray','blood','cardio','med'];
+  const done = state.step==='checkout' ? ['xray','blood','cardio'] : [];
+  $('#routeList').innerHTML=order.map((k,i)=>{
+    const p=PLACES[k], a=ARROW[p.arrow], fin=done.includes(k);
+    const now=(state.step==='arrive'&&i===0)||(state.step==='checkout'&&k==='med');
+    return `<li class="${now?'now':''}">
+      <div class="ico" style="background:${fin?'#EEF1F4':a.c};border-color:${fin?'var(--border)':a.c};color:${fin?'var(--muted)':'#fff'}">
+        <i class="fa-solid ${fin?'fa-check':'fa-arrow-right'}"></i><span class="code">${p.code}</span></div>
+      <div class="main"><div class="name">${i+1}. ${p.name}</div>
+      <div class="meta">${locOf(p)}${fin?'／完了':'／'+a.label}</div></div>
+      ${fin?'<span class="pill done">済</span>':waitPill(waitOf(k))}</li>`;
+  }).join('');
+}
+let checkins=[
+  {name:'2号館（診療棟）3階 入口',time:'10:02',done:true},
+  {name:'循環器内科 受付（1号館3階 3B）',time:'10:05',done:true},
+  {name:'中央放射線部（2号館2階 2S）',time:'',done:false},
 ];
-function renderWaits(){
-  $('#waitList').innerHTML = waits.map(w=>`
-    <li><div class="ico"><i class="fa-solid ${w.i}"></i></div>
-    <div class="main"><div class="name">${w.n}</div><div class="meta">${w.p}・${w.w}人待ち</div></div>
-    <span class="pill ${w.m<=5?'ok':w.m<=15?'mid':'busy'}">約${w.m}分</span></li>`).join('');
+function renderCheckins(){
+  const before=state.step==='none'||state.step==='home';
+  $('#checkinList').innerHTML=`<ul class="list">`+checkins.map(c=>{
+    const d=before?false:c.done;
+    return `<li><div class="ico" style="${d?'background:var(--ok-bg);border-color:#CFE6DA;color:var(--ok)':''}">
+      <i class="fa-solid ${d?'fa-check':'fa-location-dot'}"></i></div>
+      <div class="main"><div class="name">${c.name}</div>
+      <div class="meta">${d?c.time+' 受付ずみ':'未到着'}</div></div></li>`;
+  }).join('')+`</ul>`;
 }
-$('#refreshWait').addEventListener('click', ()=>{
-  waits=waits.map(w=>({...w, m:Math.max(1, w.m+Math.round((Math.random()-.5)*6))}));
-  renderWaits(); toast('待ち状況を更新しました');
+$('#checkinBtn').addEventListener('click',()=>{
+  const n=checkins.find(c=>!c.done);
+  if(!n){ toast('本日のチェックインはすべて完了しています'); return; }
+  n.done=true; n.time=new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'});
+  if(state.step==='none'||state.step==='home') state.step='arrive';
+  renderAll(); toast(n.name+' にチェックインしました','ok');
+});
+$('#refreshWait').addEventListener('click',()=>{
+  waits=waits.map(w=>{const d=Math.round((Math.random()-.45)*6);
+    return {...w,min:Math.max(1,w.min+d),people:Math.max(0,w.people+Math.round(d/3))};});
+  renderRoute(); renderGuide(); toast('待ち状況を更新しました');
 });
 
-let checkins = [{n:'正面玄関', t:'10:02', d:true}, {n:'中央放射線部（2S）', t:'', d:false}];
-$('#checkinList').innerHTML = `<ul class="list">`+checkins.map(c=>`<li><div class="ico" style="${c.d?'background:var(--ok-bg);color:var(--ok)':''}"><i class="fa-solid fa-location-dot"></i></div><div class="main"><div class="name">${c.n}</div><div class="meta">${c.d?c.t+' 自動チェックインずみ':'まだ到着していません'}</div></div></li>`).join('')+`</ul>`;
-$('#checkinBtn').addEventListener('click', ()=>toast('すでに正面玄関でチェックイン済みです'));
-$('#demoAlertBtn').addEventListener('click', ()=>{ setStep('unpaid'); window.scrollTo({top:0,behavior:'smooth'}); });
-
-let payments = [{d:'9月10日', t:'内科 再診・処方', a:1980, m:'らくらく会計'}];
-function renderPay(){
-  if(state.paid && payments[0].d !== '10月8日') payments.unshift({d:'10月8日', t:'内科 再診・レントゲン', a:state.due, m:'らくらく会計'});
-  $('#balance').textContent = yen(state.balance);
-  $('#payHistory').innerHTML = payments.map(p=>`<li><div class="ico"><i class="fa-solid fa-receipt"></i></div><div class="main"><div class="name">${p.t}</div><div class="meta">${p.d}・${p.m}</div></div><b>${yen(p.a)}</b></li>`).join('');
+/* ===== ② 予約・受診メモ ===== */
+const apptToday={d:'10月8日（水）9:30',dept:'循環器内科 再診',place:'1号館3階 3B',st:'本日'};
+let appts=[
+  {d:'11月20日（木）14:00',dept:'整形外科 初診',place:'1号館2階 2G',st:'予約ずみ'},
+];
+function renderAppts(){
+  const list = state.step==='none' ? appts : [apptToday,...appts];
+  if(!list.length){ $('#apptList').innerHTML=`<li><div class="empty">予約はありません</div></li>`; return; }
+  $('#apptList').innerHTML=list.map(a=>`
+    <li><div class="ico"><i class="fa-regular fa-calendar"></i></div>
+    <div class="main"><div class="name">${a.d}</div><div class="meta">${a.dept}・${a.place}</div></div>
+    <span class="pill ${a.st==='本日'?'busy':a.st==='仮受付'?'mid':'ok'}">${a.st}</span></li>`).join('');
 }
-$$('[data-charge]').forEach(b=>b.addEventListener('click', ()=>{ state.balance+=Number(b.dataset.charge); renderPay(); toast('チャージしました', 'ok'); }));
+$('#tempBtn').addEventListener('click',()=>{
+  const d=$('#deptSel').value, dt=$('#dateSel').value||'（日付未選択）', t=$('#timeSel').value;
+  const m=d.match(/（(.+)）/);
+  appts.unshift({d:dt,dept:d.split('（')[0]+'　'+t,place:m?m[1]:'',st:'仮受付'});
+  state.nextBooked=true;
+  renderAppts(); renderGuide();
+  $('#tempResult').innerHTML=`<div class="note ok mt"><b>仮受付を受け付けました</b><br>${d}／${dt}／${t}<br>朝6時に本受付になります。</div>`;
+  toast('仮受付を受け付けました','ok');
+});
+/* --- からだの記録：タップで選ぶだけ。入力は任意のひとことのみ --- */
+let records=[
+  {d:'10月2日',mood:'わるい',parts:['ひざ・足'],sym:['痛い'],lv:3,memo:'階段をおりるときがつらい'},
+  {d:'10月4日',mood:'ふつう',parts:['ひざ・足'],sym:['腫れている'],lv:2,memo:'湿布で楽になった'},
+  {d:'10月6日',mood:'わるい',parts:['ひざ・足'],sym:['痛い','眠れない'],lv:4,memo:'夜に目が覚めた'},
+];
+const draft={mood:'',parts:[],sym:[],lv:0};
 
-const appts = [{d:'10月8日（水）9:30', p:'内科 再診（3B）', s:'本日'},{d:'11月6日（木）9:30', p:'内科 再診（3B）', s:'予約ずみ'}];
-$('#apptList').innerHTML = appts.map(a=>`<li><div class="ico"><i class="fa-regular fa-calendar"></i></div><div class="main"><div class="name">${a.d}</div><div class="meta">${a.p}</div></div><span class="pill ${a.s==='本日'?'busy':'ok'}">${a.s}</span></li>`).join('');
+/* 単一選択（今日の調子・つらさ） */
+function bindSingle(id,onPick){
+  $('#'+id).addEventListener('click',e=>{
+    const b=e.target.closest('button'); if(!b) return;
+    $$('#'+id+' button').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));
+    onPick(b.dataset.v||b.textContent);
+  });
+}
+/* 複数選択（部位・症状） */
+function bindMulti(id,arr){
+  $('#'+id).addEventListener('click',e=>{
+    const b=e.target.closest('button'); if(!b) return;
+    const on=b.getAttribute('aria-pressed')!=='true';
+    b.setAttribute('aria-pressed',String(on));
+    const v=b.textContent;
+    if(on){ if(!arr.includes(v)) arr.push(v); } else { const i=arr.indexOf(v); if(i>=0) arr.splice(i,1); }
+  });
+}
+bindSingle('recMood',v=>draft.mood=v);
+bindSingle('recLevel',v=>draft.lv=Number(v));
+bindMulti('recParts',draft.parts);
+bindMulti('recSymptoms',draft.sym);
 
-$('#tempBtn').addEventListener('click', ()=>toast('仮受付を完了しました（朝6時に自動で本受付）','ok'));
-$('#diaryBtn').addEventListener('click', ()=>setTimeout(()=>toast('問診票を作成しました','ok'),800));
+/* 声での入力（デモ） */
+$('#recMic').addEventListener('click',()=>{
+  const b=$('#recMic'); b.classList.add('listening');
+  setTimeout(()=>{ b.classList.remove('listening'); $('#recMemo').value='階段をおりるときがつらい'; toast('声を文字にしました','ok',2200); },1200);
+});
 
-$('#feed').innerHTML = `<div class="post"><div class="post-head"><div class="avatar" style="background:#0E8A4F">医</div><div><div class="post-name">近畿大学病院 整形外科<span class="tag md">医師監修</span></div><div class="post-meta">昨日</div></div></div><p class="post-body">膝に負担をかけずに筋力を保つには、水中運動や自転車こぎが向いています。痛みが出た日は無理をせず休みましょう。</p></div>`;
-$('#medList').innerHTML = `<li><div class="ico"><i class="fa-solid fa-capsules"></i></div><div class="main"><div class="name">ロキソプロフェン錠</div><div class="meta">痛いときに1錠</div></div><span class="pill ok">残り8回分</span></li>`;
-$('#historyList').innerHTML = `<li><div class="ico"><i class="fa-regular fa-file-lines"></i></div><div class="main"><div class="name">9月10日 内科 再診</div><div class="meta">血圧 132/78・処方3種</div></div></li>`;
+function renderRecords(){
+  const now=new Date(), today=(now.getMonth()+1)+'月'+now.getDate()+'日';
+  const done=records.some(r=>r.d===today);
+  $('#recToday').innerHTML = done
+    ? `<div class="note ok" style="margin-bottom:.9rem;">今日の記録をつけました</div>`
+    : `<div class="note" style="margin-bottom:.9rem;">今日はまだ記録していません</div>`;
+  $('#recList').innerHTML=records.slice(0,4).map(r=>`
+    <li><div class="ico">${r.lv||'—'}</div>
+    <div class="main"><div class="name">${r.d}　${r.parts.join('・')||'—'}</div>
+    <div class="meta">${[r.mood,...r.sym].filter(Boolean).join('／')}${r.memo?'　'+r.memo:''}</div></div></li>`).join('')
+    || `<li><div class="empty">まだ記録がありません</div></li>`;
+}
+$('#recSave').addEventListener('click',()=>{
+  if(!draft.mood && !draft.parts.length && !draft.sym.length){ toast('今日の調子か、気になるところを選んでください'); return; }
+  const now=new Date();
+  records.unshift({d:(now.getMonth()+1)+'月'+now.getDate()+'日',mood:draft.mood,
+    parts:[...draft.parts],sym:[...draft.sym],lv:draft.lv,memo:$('#recMemo').value.trim()});
+  draft.mood=''; draft.lv=0; draft.parts.length=0; draft.sym.length=0;
+  $$('#recMood button,#recLevel button,#recParts button,#recSymptoms button').forEach(b=>b.setAttribute('aria-pressed','false'));
+  $('#recMemo').value='';
+  renderRecords(); toast('今日の記録をつけました','ok');
+});
 
+/* 記録をまとめる：集計するだけで、診断や科の判断はしない */
+$('#diaryBtn').addEventListener('click',()=>{
+  const box=$('#diaryResult');
+  if(!records.length){ toast('先に記録をつけてください'); return; }
+  box.innerHTML=`<div class="note mt center"><span class="spinner"></span> 記録をまとめています…</div>`;
+  setTimeout(()=>{
+    const parts=[...new Set(records.flatMap(r=>r.parts))].join('・')||'—';
+    const syms=[...new Set(records.flatMap(r=>r.sym))].join('・')||'—';
+    const first=records[records.length-1].d;
+    const lvs=records.map(r=>r.lv).filter(Boolean);
+    const memos=[...new Set(records.map(r=>r.memo).filter(Boolean))].slice(0,3).join('／')||'—';
+    box.innerHTML=`<div class="card mt">
+      <div class="card-head"><i class="fa-solid fa-list-check"></i><h2>受診メモ（下書き）</h2></div>
+      <div class="card-body">
+        <div class="kv"><span>気になるところ</span><b>${parts}</b></div>
+        <div class="kv"><span>どんな感じ</span><b>${syms}</b></div>
+        <div class="kv"><span>いつから</span><b>${first}</b></div>
+        <div class="kv"><span>つらさ</span><b>${lvs.length?'最大 '+Math.max(...lvs)+' / 5':'—'}（${records.length}日分）</b></div>
+        <div class="kv"><span>ひとこと</span><b>${memos}</b></div>
+        <div class="note mt">記録をまとめたものです。診断や受診する科の判断は医師が行います。診察前に直せます。</div>
+        <button class="btn btn-primary mt" id="sendKarte">このメモを医師に渡す</button>
+      </div></div>`;
+    $('#sendKarte').addEventListener('click',()=>toast('受診メモを医師に共有しました','ok'));
+  },1200);
+});
+
+/* ===== ③ お支払い ===== */
+let payments=[
+  {d:'9月10日',t:'循環器内科 再診・処方',a:1980,m:'後日引き落とし'},
+  {d:'8月13日',t:'循環器内科 再診',a:1450,m:'後日引き落とし'},
+];
+function addPayment(m,a){ payments.unshift({d:'10月8日',t:'循環器内科 再診・レントゲン',a,m}); renderPay(); }
+function renderPay(){
+  $('#balance').textContent=yen(state.balance);
+  $('#dueAmount').textContent = state.step==='none' ? '—' : yen(state.due);
+  $('#dueDate').textContent = state.step==='none' ? '—' : state.paid ? 'お支払いずみ' : '11月10日';
+  $('#payHistory').innerHTML=payments.map(p=>`
+    <li><div class="ico"><i class="fa-solid fa-receipt"></i></div>
+    <div class="main"><div class="name">${p.t}</div><div class="meta">${p.d}・${p.m}</div></div>
+    <b>${yen(p.a)}</b></li>`).join('');
+}
+$$('[data-charge]').forEach(b=>b.addEventListener('click',()=>{
+  state.balance+=Number(b.dataset.charge); renderPay();
+  toast(yen(Number(b.dataset.charge))+' をチャージしました','ok');
+}));
+$('#applePayBtn').addEventListener('click',()=>{
+  if(state.step==='none'){ toast('本日のお支払いはありません'); return; }
+  if(state.paid){ toast('本日分はお支払いずみです'); return; }
+  $('#payResult').innerHTML=`<div class="note mt center"><span class="spinner"></span> 顔認証で確認しています…</div>`;
+  setTimeout(()=>{
+    state.paid=true;
+    const i=payments.findIndex(p=>p.d==='10月8日');
+    if(i>=0) payments[i].m='Apple Pay'; else addPayment('Apple Pay',state.due);
+    renderPay(); renderGuide();
+    $('#payResult').innerHTML=`<div class="note ok mt center">お支払いが完了しました</div>`;
+    toast(yen(state.due)+' のお支払いが完了しました','ok');
+  },1400);
+});
+
+/* ===== ④ お薬・医療記録 ===== */
+const meds=[
+  {n:'アムロジピン錠 5mg',m:'1日1回 朝食後',type:'daily',left:12,unit:'日分'},
+  {n:'ロキソプロフェン錠 60mg',m:'痛いときに1錠（1日3回まで）',type:'prn',left:8,unit:'回分',last:'10月6日 21時'},
+  {n:'ロキソプロフェンテープ',m:'1日1回 患部に貼付',type:'daily',left:21,unit:'枚'},
+];
+function renderMeds(){
+  $('#medList').innerHTML=meds.map((m,i)=>{
+    const low=m.left<=2, cls=m.left===0?'busy':low?'mid':'ok';
+    const label=m.left===0?'残りなし':'残り'+m.left+m.unit;
+    /* 頓服は飲んだ回数でしか残数が分からないため、その場で記録できるようにする */
+    const act = m.type==='prn'
+      ? `<div class="med-act"><span class="pill ${cls}">${label}</span>
+         <button class="btn btn-sm btn-quiet" data-take="${i}" ${m.left===0?'disabled':''}>のんだ</button></div>`
+      : `<span class="pill ${cls}">${label}</span>`;
+    const sub = m.type==='prn' && m.last ? `${m.m}／最後に飲んだのは ${m.last}` : m.m;
+    return `<li><div class="ico"><i class="fa-solid fa-capsules"></i></div>
+      <div class="main"><div class="name">${m.n}</div><div class="meta">${sub}</div></div>${act}</li>`;
+  }).join('');
+  $$('[data-take]').forEach(b=>b.addEventListener('click',()=>{
+    const m=meds[Number(b.dataset.take)];
+    if(m.left<=0) return;
+    m.left--; 
+    const now=new Date();
+    m.last=(now.getMonth()+1)+'月'+now.getDate()+'日 '+now.getHours()+'時';
+    renderMeds();
+    toast(m.n+' を1回分 記録しました（残り'+m.left+m.unit+'）','ok');
+    if(m.left<=2) setTimeout(()=>toast('お薬が少なくなっています。次の受診でご相談ください'),1200);
+  }));
+}
+const hist=[
+  {d:'9月10日',t:'循環器内科 再診',m:'血圧 132/78・処方3種'},
+  {d:'8月13日',t:'循環器内科 再診',m:'血液検査 異常なし'},
+  {d:'7月9日',t:'循環器内科 再診',m:'心電図 異常なし'},
+];
+function renderHistory(){
+  const list = state.step==='checkout' ? [{d:'10月8日',t:'循環器内科 再診（本日）',m:'レントゲン・採血'},...hist] : hist;
+  $('#historyList').innerHTML=list.map(h=>`
+    <li><div class="ico"><i class="fa-regular fa-file-lines"></i></div>
+    <div class="main"><div class="name">${h.d}　${h.t}</div><div class="meta">${h.m}</div></div></li>`).join('');
+}
+
+/* ===== AIコンシェルジュ ===== */
+function aiAnswer(q){
+  const s=state.step;
+  if(q.includes('予約')) return '「予約・仮受付」から申し込めます。夜中でも受け付けられ、翌朝6時に本受付となって順番が確保されます。';
+  if(q.includes('次どこ')){
+    if(s==='none')   return '今は予約が入っていません。まず「予約・仮受付」から申し込んでください。';
+    if(s==='home')   return '今日は9時30分から循環器内科の予約です。まわる順番は病院に着いてから、そのときの混み具合に合わせてご案内します。';
+    if(s==='arrive') return '採血が混んでいるので、先にレントゲンへ行きましょう。2号館（診療棟）2階の 2S 中央放射線部です。赤色の矢印のさすほうへ進んでください。';
+    return 'お薬は2号館（診療棟）3階のおくすり受付カウンターです。黄色の矢印のさすほうへ進んでください。番号は A-24 です。';
+  }
+  if(q.includes('支払')||q.includes('払い')) return '診療費は後日、登録したクレジットカードから引き落とされます。会計を待たずにお帰りいただけます。カードを登録していない場合は、会計の処理が終わるのを待って、自動支払機か会計窓口でお支払いください。';
+  if(q.includes('待ち')) return '今の待ち時間です。'+waits.map(w=>PLACES[w.id].name+'は約'+w.min+'分').join('、')+' です。';
+  if(q.includes('薬'))   return 'お薬は2号館（診療棟）3階のおくすり受付カウンターでお渡しします。黄色の矢印のさすほうへ進んでください。';
+  if(q.includes('1号館')||q.includes('行き来')) return '1号館（外来棟）と2号館（診療棟）は3階のデッキでつながっています。3階まで上がれば、そのまま行き来できます。';
+  if(q.includes('診察券')||q.includes('バス')) return 'ホーム画面の診察券のバーコードを読み取り機にかざしてください。受付、検査、お支払い、自動運転バスの乗車まで、これ1つで通せます。';
+  return 'もう少しくわしく教えてください。「次どこに行けばいい？」のように話しかけていただくと、すぐにお答えできます。';
+}
+function pushMsg(t,who='ai'){
+  const el=document.createElement('div'); el.className='msg '+who;
+  el.innerHTML = who==='ai' ? `<div class="speak"><i class="fa-solid fa-volume-high"></i> 音声でご案内中</div>${t}` : t;
+  $('#chat').appendChild(el); $('#chat').scrollTop=$('#chat').scrollHeight;
+}
+function askAI(q){
+  pushMsg(q,'me');
+  const t=document.createElement('div'); t.className='msg ai typing';
+  t.innerHTML='<span></span><span></span><span></span>';
+  $('#chat').appendChild(t); $('#chat').scrollTop=$('#chat').scrollHeight;
+  setTimeout(()=>{t.remove();pushMsg(aiAnswer(q));},900);
+}
+$('#quick').addEventListener('click',e=>{ if(e.target.tagName==='BUTTON') askAI(e.target.textContent); });
+$('#micBtn').addEventListener('click',()=>{
+  const m=$('#micBtn'), l=$('#micLabel');
+  m.classList.add('listening'); l.textContent='お話しください…（聞き取り中）';
+  setTimeout(()=>{
+    m.classList.remove('listening'); l.textContent='マイクを押して話しかけてください';
+    const s=['次どこに行けばいい？','待ち時間はどれくらい？','支払いのやり方は？','予約を取りたい'];
+    askAI(s[Math.floor(Math.random()*s.length)]);
+  },1600);
+});
+
+/* ===== モーダル ===== */
 function openModal(id){ $('#'+id).classList.add('open'); }
-function closeModal(id){ $('#'+id).classList.remove('open'); }
-document.addEventListener('click', e=>{
-  const c = e.target.closest('[data-close]'); if(c) closeModal(c.dataset.close);
+document.addEventListener('click',e=>{
+  const c=e.target.closest('[data-close]');
+  if(c) $('#'+c.dataset.close).classList.remove('open');
   if(e.target.classList.contains('modal')) e.target.classList.remove('open');
 });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') $$('.modal.open').forEach(m=>m.classList.remove('open')); });
+$('#fabBtn').addEventListener('click',()=>{
+  openModal('aiModal'); $('#fabBubble').style.display='none';
+  if(!$('#chat').children.length) pushMsg('こんにちは。困ったことがあれば、下のボタンを押すか、マイクに話しかけてください。');
+});
+$('#helpBtn').addEventListener('click',()=>openModal('helpModal'));
 
-$('#fabBtn').addEventListener('click', ()=>{ openModal('aiModal'); $('#fabBubble').style.display='none'; });
-$('#helpBtn').addEventListener('click', ()=>openModal('helpModal'));
-$('#quick').addEventListener('click', e=>{ if(e.target.tagName==='BUTTON') toast('AI応答デモ: '+e.target.textContent); });  renderGuide(); renderWaits(); renderPay(); applyEasyText(); $$('.sim-btn').forEach(b=>b.addEventListener('click', ()=>setStep(b.dataset.step)));
+/* ===== 初期化 ===== */
+function renderAll(){
+  renderGuide(); renderCard(); renderTransport(); renderRoute(); renderCheckins();
+  renderAppts(); renderRecords(); renderPay(); renderMeds(); renderHistory();
+  applyEasyText(); measureTop();
+}
+(()=>{ const d=new Date(Date.now()+86400000*3); $('#dateSel').value=d.toISOString().slice(0,10); })();
+renderCompanion(); renderAll();
+$('#onboard').classList.add('open');
+setTimeout(()=>{ $('#fabBubble').style.opacity='0'; },7000);
 </script>
 </body>
 </html>
