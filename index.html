@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#003B6D">
-<title>スマート病院通院ナビ｜病院（プロトタイプ）</title>
-<meta name="description" content="病院 患者向け通院支援アプリ「スマート病院通院ナビ」コンテスト提出用プロトタイプ">
+<title>スマート病院通院ナビ｜大学病院（プロトタイプ）</title>
+<meta name="description" content="大学病院 患者向け通院支援アプリ「スマート病院通院ナビ」コンテスト提出用プロトタイプ">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -232,6 +232,8 @@ textarea.inp{min-height:110px;resize:vertical;line-height:1.7;}
 .levels button{min-height:52px;border:1px solid var(--border-strong);background:#fff;color:var(--text);
   border-radius:var(--r-ctl);font-size:1.05rem;font-weight:700;}
 .levels button[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:#fff;}
+.insurance{display:flex;align-items:center;gap:.6rem;margin-top:.7rem;font-size:.85rem;color:var(--muted);}
+.times{display:flex;flex-direction:column;align-items:flex-end;gap:.25rem;flex:none;}
 .med-act{display:flex;flex-direction:column;align-items:flex-end;gap:.4rem;flex:none;}
 .med-act .btn-sm{min-height:40px;padding:.2rem .7rem;}
 .med-act .btn-sm:disabled{opacity:.45;}
@@ -330,15 +332,15 @@ textarea.inp{min-height:110px;resize:vertical;line-height:1.7;}
   <div class="top" id="top">
     <header class="app-header">
       <div class="head-home" id="headHome">
-        <div class="brand-sub">病院</div>
+        <div class="brand-sub">大学病院</div>
         <div class="brand-title">スマート病院通院ナビ</div>
         <div class="header-controls">
           <label class="user-select" for="familySelect">
             <i class="fa-solid fa-user-group" aria-hidden="true"></i>
             <select id="familySelect" aria-label="表示する人を切り替える">
-              <option value="self">近大 太郎 さん（本人）</option>
-              <option value="mother">近大 花子 さん（母）</option>
-              <option value="son">近大 みなと さん（長男）</option>
+              <option value="self">山田 太郎 さん（本人）</option>
+              <option value="mother">山田 花子 さん（母）</option>
+              <option value="son">山田 みなと さん（長男）</option>
             </select>
           </label>
           <button class="hbtn" id="helpBtn"><i class="fa-regular fa-circle-question"></i>設定</button>
@@ -366,8 +368,9 @@ textarea.inp{min-height:110px;resize:vertical;line-height:1.7;}
         <span class="num" id="cardNo">No. 4821-9073</span>
       </div>
       <div class="idcard-body">
-        <div class="barcode"><div class="bars" id="bars"></div><div class="num">KDU 4821 9073</div></div>
+        <div class="barcode"><div class="bars" id="bars"></div><div class="num">4821 9073</div></div>
         <p class="use" id="cardUse">受付・検査・支払い・バスの乗車に使えます。</p>
+        <div class="insurance"><span class="badge-on"><i class="fa-solid fa-check"></i> 今月の保険証確認 済</span><span>10月2日</span></div>
         <button class="btn btn-quiet mt" id="cardBig">大きく表示する</button>
       </div>
     </section>
@@ -514,10 +517,10 @@ textarea.inp{min-height:110px;resize:vertical;line-height:1.7;}
       <div class="card-head"><i class="fa-regular fa-credit-card"></i><h2 data-easy="はらいかた">お支払い方法</h2></div>
       <div class="card-body">
         <span class="badge-on"><i class="fa-solid fa-check"></i> クレジットカード 登録ずみ</span>
-        <p style="margin:.7rem 0 0;font-size:.98rem;">診療費は後日、登録のカードから引き落とされます。会計を待たずにお帰りいただけます。</p>
+        <p style="margin:.7rem 0 0;font-size:.98rem;">診療費は受診の5日後に、登録のカードから引き落とされます。会計を待たずにお帰りいただけます。</p>
         <div class="kv mt"><span>登録カード</span><b>VISA •••• 4821</b></div>
         <div class="kv"><span>本日の診療費</span><b id="dueAmount">¥2,340</b></div>
-        <div class="kv"><span>引き落とし予定</span><b id="dueDate">11月10日</b></div>
+        <div class="kv"><span>引き落とし</span><b id="dueDate">10月13日（5日後）</b></div>
         <div class="note plain mt detail">
           カード未登録の場合は、会計の処理が終わるまでお待ちいただき、自動支払機または会計窓口でお支払いいただきます。
         </div>
@@ -611,12 +614,20 @@ textarea.inp{min-height:110px;resize:vertical;line-height:1.7;}
           <div><div style="font-weight:700;">大きい文字・やさしい表示</div>
           <div style="font-size:.85rem;color:var(--muted);">言葉もやさしくなります</div></div>
         </div>
+        <div class="switch-row" style="border-top:1px solid var(--border);">
+          <button class="switch on" id="callSwitch" aria-pressed="true" aria-label="診察の15分前に知らせる"></button>
+          <div><div style="font-weight:700;">診察の15分前に知らせる</div>
+          <div style="font-size:.85rem;color:var(--muted);">院内のどこにいても通知が届きます</div></div>
+        </div>
+        <div class="card-body" style="border-top:1px solid var(--border);">
+          <button class="btn btn-quiet" id="wifiBtn"><i class="fa-solid fa-wifi"></i> 院内の無料Wi-Fiにつなぐ</button>
+        </div>
       </div>
       <div class="card mt"><ul class="list">
         <li><div class="ico">1</div><div class="main"><div class="name">予約をとる</div><div class="meta">夜でも仮受付でき、朝6時に本受付になります</div></div></li>
         <li><div class="ico">2</div><div class="main"><div class="name">診察券をかざす</div><div class="meta">受付・検査・支払い・バスの乗車に使えます</div></div></li>
         <li><div class="ico">3</div><div class="main"><div class="name">行き先を確認して進む</div><div class="meta">棟・階・ブロックと矢印の色で案内します</div></div></li>
-        <li><div class="ico">4</div><div class="main"><div class="name">会計を待たずに帰る</div><div class="meta">診療費は後日カードから引き落とされます</div></div></li>
+        <li><div class="ico">4</div><div class="main"><div class="name">会計を待たずに帰る</div><div class="meta">診療費は5日後にカードから引き落とされます</div></div></li>
       </ul></div>
       <button class="btn btn-primary mt" data-close="helpModal">とじる</button>
     </div>
@@ -634,7 +645,7 @@ textarea.inp{min-height:110px;resize:vertical;line-height:1.7;}
 <script>
 /* =========================================================================
    スマート病院通院ナビ ― デモ用スクリプト
-   院内表記は病院の公式フロアマップ（1号館＝外来棟／2号館＝診療棟）に準拠
+   院内表記は大学病院のフロアマップ（1号館＝外来棟／2号館＝診療棟）に準拠
    ========================================================================= */
 
 const state = {
@@ -647,11 +658,12 @@ const state = {
   balance:3200,
   due:2340,
   nextBooked:false,   // 次回の予約を取ったか
+  callNotice:true,    // 診察15分前の通知
 };
 
-const PEOPLE={self:{name:'近大 太郎',rel:'本人',no:'4821-9073'},
-              mother:{name:'近大 花子',rel:'母',no:'4821-5510'},
-              son:{name:'近大 みなと',rel:'長男',no:'4821-7284'}};
+const PEOPLE={self:{name:'山田 太郎',rel:'本人',no:'4821-9073'},
+              mother:{name:'山田 花子',rel:'母',no:'4821-5510'},
+              son:{name:'山田 みなと',rel:'長男',no:'4821-7284'}};
 
 const ARROW={red:{c:'var(--arw-red)',label:'赤色の矢印'},blue:{c:'var(--arw-blue)',label:'青色の矢印'},
              green:{c:'var(--arw-green)',label:'緑色の矢印'},yellow:{c:'var(--arw-yellow)',label:'黄色の矢印'}};
@@ -670,14 +682,14 @@ let waits=[{id:'cardio',min:10,people:2},{id:'blood',min:35,people:12},{id:'xray
 /* 交通：往路・復路それぞれの次発時刻 */
 const TRANSPORT={
   go:[
-    {n:'自動運転バス',m:'自宅前 → 病院ロータリー（診察券をかざして乗車）',t:'8:52'},
-    {n:'電車・路線バス',m:'最寄り駅 → 病院ロータリー バス停',t:'8:41'},
-    {n:'自家用車',m:'立体駐車場（3階の連絡通路で2号館へ直結）',t:'所要25分'},
+    {n:'自動運転バス',m:'自宅前 → 病院ロータリー（診察券をかざして乗車）',t:['8:52','9:12']},
+    {n:'路線バス',m:'泉ヶ丘駅 → 病院ロータリー',t:['8:41','8:56']},
+    {n:'自家用車',m:'立体駐車場（3階の連絡通路で2号館へ直結）',t:['所要25分']},
   ],
   back:[
-    {n:'自動運転バス',m:'病院ロータリー → 自宅前',t:'14:20'},
-    {n:'路線バス',m:'病院ロータリー → 最寄り駅',t:'14:33'},
-    {n:'電車',m:'最寄り駅 発',t:'14:48'},
+    {n:'自動運転バス',m:'病院ロータリー → 自宅前',t:['14:20','14:50']},
+    {n:'路線バス',m:'病院ロータリー → 泉ヶ丘駅',t:['14:33','14:48']},
+    {n:'電車',m:'泉ヶ丘駅 発',t:['14:52','15:04']},
   ],
 };
 
@@ -784,7 +796,7 @@ function drawBars(el){
 function renderCard(){
   const p=PEOPLE[state.viewing];
   $('#cardNo').textContent='No. '+p.no;
-  $('.idcard .barcode .num').textContent='KDU '+p.no.replace('-',' ');
+  $('.idcard .barcode .num').textContent=''+p.no.replace('-',' ');
   drawBars($('#bars'));
 }
 function showCardBig(){
@@ -793,7 +805,7 @@ function showCardBig(){
   $('#genBody').innerHTML=`<div class="card"><div class="card-body center">
       <div style="font-weight:700;font-size:1.1rem;">${p.name} さん</div>
       <div style="color:var(--muted);font-size:.9rem;margin-bottom:.8rem;">No. ${p.no}</div>
-      <div class="barcode big"><div class="bars" id="barsBig"></div><div class="num">KDU ${p.no.replace('-',' ')}</div></div>
+      <div class="barcode big"><div class="bars" id="barsBig"></div><div class="num">${p.no.replace('-',' ')}</div></div>
       <p class="use" style="margin-top:.9rem;color:var(--muted);font-size:.9rem;">読み取り機にかざしてください</p>
     </div></div>
     <button class="btn btn-primary mt" data-close="genModal">とじる</button>`;
@@ -807,10 +819,14 @@ function renderTransport(){
   const back = state.step==='checkout';
   $('#transportTitle').textContent = back ? 'お帰りの時刻' : '病院への行き方と時刻';
   const rows = back ? TRANSPORT.back : TRANSPORT.go;
-  $('#transportList').innerHTML=rows.map(r=>`
-    <li><div class="ico"><i class="fa-solid ${r.n.includes('電車')?'fa-train-subway':r.n.includes('車')&&r.n.includes('自家')?'fa-car-side':'fa-bus'}"></i></div>
-    <div class="main"><div class="name">${r.n}</div><div class="meta detail">${r.m}</div></div>
-    <span class="pill time">${r.t.includes(':')?'次 '+r.t:r.t}</span></li>`).join('');
+  $('#transportList').innerHTML=rows.map(r=>{
+    const ico = r.n.includes('電車')?'fa-train-subway' : r.n.includes('自家用')?'fa-car-side' : 'fa-bus';
+    /* 次の1本だけでは乗り遅れたときに判断できないため、2本先まで出す */
+    const times = r.t.map((t,i)=>`<span class="pill ${i===0?'time':'done'}">${t}</span>`).join('');
+    return `<li><div class="ico"><i class="fa-solid ${ico}"></i></div>
+      <div class="main"><div class="name">${r.n}</div><div class="meta detail">${r.m}</div></div>
+      <div class="times">${times}</div></li>`;
+  }).join('');
 }
 
 /* ===== 本日の受診ガイド ===== */
@@ -889,7 +905,7 @@ function renderGuide(){
         <p class="guide-sub">番号札 A-24 でお呼びします</p>
       </div>
       <div class="route">
-        <p class="route-main">本日の診療費 <em>${yen(state.due)}</em> は${state.paid?'お支払いずみです':'後日カードから引き落とされます'}</p>
+        <p class="route-main">本日の診療費 <em>${yen(state.due)}</em> は${state.paid?'お支払いずみです':'5日後にカードから引き落とされます'}</p>
         <span class="route-wait">お薬のお渡しまで 約${waitOf('med')}分</span>
         ${arrowNav('med')}
       </div>
@@ -917,10 +933,11 @@ function setStep(step){
   if(step==='none'){ state.paid=false; state.nextBooked=false; toast('予約はまだありません'); }
   if(step==='home'){ state.paid=false; toast('本日 9:30 循環器内科の予約があります'); }
   if(step==='arrive'){ state.paid=false; toast('診察券で自動チェックインしました（循環器内科 受付完了）','ok');
-    setTimeout(()=>toast('AIが順番を組み替えました：先に2号館2階 2S レントゲンへ'),1300); }
+    setTimeout(()=>toast('先に2号館2階 2S レントゲンへお進みください'),1300);
+    if(state.callNotice) setTimeout(()=>toast('診察の15分前になったらお知らせします'),2600); }
   if(step==='checkout'){
     if(!state.paid && !payments.some(p=>p.d==='10月8日')) addPayment('後日引き落とし（VISA •••• 4821）',state.due);
-    toast('診療費 '+yen(state.due)+' は後日カードから引き落とされます','ok');
+    toast('診療費 '+yen(state.due)+' は5日後にカードから引き落とされます','ok');
   }
   goScreen('home'); renderAll();
 }
@@ -1090,11 +1107,13 @@ function addPayment(m,a){ payments.unshift({d:'10月8日',t:'循環器内科 再
 function renderPay(){
   $('#balance').textContent=yen(state.balance);
   $('#dueAmount').textContent = state.step==='none' ? '—' : yen(state.due);
-  $('#dueDate').textContent = state.step==='none' ? '—' : state.paid ? 'お支払いずみ' : '11月10日';
-  $('#payHistory').innerHTML=payments.map(p=>`
+  $('#dueDate').textContent = state.step==='none' ? '—' : state.paid ? 'お支払いずみ' : '10月13日（5日後）';
+  $('#payHistory').innerHTML=payments.map((p,i)=>`
     <li><div class="ico"><i class="fa-solid fa-receipt"></i></div>
     <div class="main"><div class="name">${p.t}</div><div class="meta">${p.d}・${p.m}</div></div>
-    <b>${yen(p.a)}</b></li>`).join('');
+    <div class="times"><b>${yen(p.a)}</b>
+    <button class="btn btn-sm btn-quiet" data-receipt="${i}">領収書</button></div></li>`).join('');
+  $$('[data-receipt]').forEach(b=>b.addEventListener('click',()=>showReceipt(payments[Number(b.dataset.receipt)])));
 }
 $$('[data-charge]').forEach(b=>b.addEventListener('click',()=>{
   state.balance+=Number(b.dataset.charge); renderPay();
@@ -1113,6 +1132,22 @@ $('#applePayBtn').addEventListener('click',()=>{
     toast(yen(state.due)+' のお支払いが完了しました','ok');
   },1400);
 });
+
+/* 領収書・明細：自宅やコンビニでも出せるようにPDFで保存する想定 */
+function showReceipt(p){
+  $('#genTitle').textContent='領収書・明細書';
+  $('#genBody').innerHTML=`<div class="card"><div class="card-body">
+      <div class="kv"><span>発行先</span><b>${PEOPLE[state.viewing].name} 様</b></div>
+      <div class="kv"><span>受診日</span><b>${p.d}</b></div>
+      <div class="kv"><span>内容</span><b>${p.t}</b></div>
+      <div class="kv"><span>お支払い方法</span><b>${p.m}</b></div>
+      <div class="kv"><span>合計</span><b>${yen(p.a)}</b></div>
+    </div></div>
+    <button class="btn btn-primary mt" id="pdfBtn">PDFで保存する</button>
+    <button class="btn btn-quiet mt" data-close="genModal">とじる</button>`;
+  $('#pdfBtn').addEventListener('click',()=>toast('領収書をPDFで保存しました（コンビニでも印刷できます）','ok'));
+  openModal('genModal');
+}
 
 /* ===== ④ お薬・医療記録 ===== */
 const meds=[
@@ -1166,10 +1201,13 @@ function aiAnswer(q){
     if(s==='arrive') return '採血が混んでいるので、先にレントゲンへ行きましょう。2号館（診療棟）2階の 2S 中央放射線部です。赤色の矢印のさすほうへ進んでください。';
     return 'お薬は2号館（診療棟）3階のおくすり受付カウンターです。黄色の矢印のさすほうへ進んでください。番号は A-24 です。';
   }
-  if(q.includes('支払')||q.includes('払い')) return '診療費は後日、登録したクレジットカードから引き落とされます。会計を待たずにお帰りいただけます。カードを登録していない場合は、会計の処理が終わるのを待って、自動支払機か会計窓口でお支払いください。';
+  if(q.includes('支払')||q.includes('払い')) return '診療費は受診の5日後に、登録したクレジットカードから引き落とされます。会計を待たずにお帰りいただけます。カードを登録していない場合は、会計の処理が終わるのを待って、自動支払機か会計窓口でお支払いください。';
   if(q.includes('待ち')) return '今の待ち時間です。'+waits.map(w=>PLACES[w.id].name+'は約'+w.min+'分').join('、')+' です。';
   if(q.includes('薬'))   return 'お薬は2号館（診療棟）3階のおくすり受付カウンターでお渡しします。黄色の矢印のさすほうへ進んでください。';
   if(q.includes('1号館')||q.includes('行き来')) return '1号館（外来棟）と2号館（診療棟）は3階のデッキでつながっています。3階まで上がれば、そのまま行き来できます。';
+  if(q.includes('領収')) return 'お支払い画面の履歴から領収書・明細を開けます。PDFで保存すれば、ご自宅やコンビニでも印刷できます。';
+  if(q.includes('保険証')) return '今月の保険証の確認は10月2日に済んでいます。月が変わったら、受付で保険証またはマイナンバーカードをご提示ください。';
+  if(q.includes('Wi-Fi')||q.includes('wifi')) return '設定から院内の無料Wi-Fiにつなげます。パスワードの入力はいりません。';
   if(q.includes('診察券')||q.includes('バス')) return 'ホーム画面の診察券のバーコードを読み取り機にかざしてください。受付、検査、お支払い、自動運転バスの乗車まで、これ1つで通せます。';
   return 'もう少しくわしく教えてください。「次どこに行けばいい？」のように話しかけていただくと、すぐにお答えできます。';
 }
@@ -1209,6 +1247,24 @@ $('#fabBtn').addEventListener('click',()=>{
   if(!$('#chat').children.length) pushMsg('こんにちは。困ったことがあれば、下のボタンを押すか、マイクに話しかけてください。');
 });
 $('#helpBtn').addEventListener('click',()=>openModal('helpModal'));
+
+/* 診察の15分前通知 */
+$('#callSwitch').addEventListener('click',()=>{
+  state.callNotice=!state.callNotice;
+  $('#callSwitch').classList.toggle('on',state.callNotice);
+  $('#callSwitch').setAttribute('aria-pressed',String(state.callNotice));
+  toast(state.callNotice?'診察の15分前にお知らせします':'15分前の通知を止めました','ok',2400);
+});
+
+/* 院内の無料Wi-Fi（アプリから接続する想定） */
+$('#wifiBtn').addEventListener('click',()=>{
+  const b=$('#wifiBtn');
+  b.innerHTML='<span class="spinner"></span> 接続しています…';
+  setTimeout(()=>{
+    b.innerHTML='<i class="fa-solid fa-wifi"></i> 院内Wi-Fiに接続中';
+    toast('院内の無料Wi-Fiにつながりました','ok');
+  },1200);
+});
 
 /* ===== 初期化 ===== */
 function renderAll(){
