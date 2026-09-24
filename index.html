@@ -151,18 +151,13 @@ main{padding:1rem;display:flex;flex-direction:column;gap:1rem;}
 .btn-sm{min-height:40px;font-size:.88rem;padding:.3rem .8rem;}
 .btn-xl{min-height:68px;font-size:1.15rem;}
 
-/* ===== 診察券（常時表示） ===== */
-.idcard{background:var(--card);border:1px solid var(--border);border-radius:var(--r-card);overflow:hidden;}
-.idcard-head{display:flex;align-items:center;gap:.6rem;padding:.75rem 1rem;border-bottom:1px solid var(--border);}
-.idcard-head h2{margin:0;font-size:1rem;font-weight:700;flex:1;}
-.idcard-head .num{font-size:.85rem;color:var(--muted);font-weight:500;}
-.idcard-body{padding:.9rem 1rem 1rem;}
+/* ===== 診察券（左下アイコンから開く） ===== */
 .barcode{background:#fff;border:1px solid var(--border);border-radius:var(--r-ctl);padding:.9rem .7rem .6rem;}
 .bars{display:flex;align-items:flex-end;justify-content:center;gap:2px;height:62px;}
 .bars span{background:#1A1A1C;width:3px;height:100%;}
 .barcode .num{font-size:.85rem;letter-spacing:.24em;color:var(--text);margin-top:.5rem;font-weight:700;text-align:center;}
-.idcard .use{font-size:.85rem;color:var(--muted);margin-top:.7rem;}
-.barcode.big .bars{height:130px;}
+.use{font-size:.88rem;color:var(--muted);}
+.barcode.big .bars{height:140px;}
 .barcode.big .bars span{width:4px;}
 
 /* ===== メイン4ボタン ===== */
@@ -252,7 +247,12 @@ textarea.inp{min-height:110px;resize:vertical;line-height:1.7;}
 
 /* ===== AIコンシェルジュ ===== */
 .fab-wrap{position:fixed;bottom:calc(var(--bar-h) + 16px);left:50%;transform:translateX(-50%);width:100%;max-width:480px;
-  pointer-events:none;z-index:50;display:flex;justify-content:flex-end;align-items:center;gap:.5rem;padding:0 1rem;}
+  pointer-events:none;z-index:50;display:flex;justify-content:space-between;align-items:center;gap:.5rem;padding:0 1rem;}
+.fab-right{display:flex;align-items:center;gap:.5rem;}
+.fab-card{background:#fff;border:1px solid var(--border-strong);color:var(--blue-dark);
+  display:flex;flex-direction:column;gap:0;line-height:1.2;}
+.fab-card i{font-size:1.25rem;}
+.fab-card span{font-size:.68rem;font-weight:700;}
 .fab-bubble{background:#fff;border:1px solid var(--border-strong);color:var(--blue-dark);font-weight:700;font-size:.85rem;
   border-radius:var(--r-ctl);padding:.4rem .7rem;transition:opacity .4s;}
 .fab{pointer-events:auto;width:64px;height:64px;border-radius:32px;border:2px solid #fff;background:var(--blue);color:#fff;
@@ -349,7 +349,6 @@ textarea.inp{min-height:110px;resize:vertical;line-height:1.7;}
       <div class="head-sub" id="headSub">
         <button class="back-btn" id="backBtn"><i class="fa-solid fa-arrow-left"></i> もどる</button>
         <h1 id="subTitle">画面名</h1>
-        <button class="hbtn" id="cardBtnSub" aria-label="診察券を表示"><i class="fa-solid fa-barcode"></i>診察券</button>
       </div>
     </header>
     <div class="companion" id="companionBar"></div>
@@ -359,21 +358,6 @@ textarea.inp{min-height:110px;resize:vertical;line-height:1.7;}
   <!-- ==================== ホーム ==================== -->
   <main class="screen active" id="scr-home">
     <section class="guide" id="guideCard" aria-live="polite"></section>
-
-    <!-- 診察券：常時表示。受付・検査・会計・自動運転バスの共通キー -->
-    <section class="idcard">
-      <div class="idcard-head">
-        <i class="fa-solid fa-barcode" style="color:var(--muted)"></i>
-        <h2 data-easy="しんさつけん">診察券</h2>
-        <span class="num" id="cardNo">No. 4821-9073</span>
-      </div>
-      <div class="idcard-body">
-        <div class="barcode"><div class="bars" id="bars"></div><div class="num">4821 9073</div></div>
-        <p class="use" id="cardUse">受付・検査・支払い・バスの乗車に使えます。</p>
-        <div class="insurance"><span class="badge-on"><i class="fa-solid fa-check"></i> 今月の保険証確認 済</span><span>10月2日</span></div>
-        <button class="btn btn-quiet mt" id="cardBig">大きく表示する</button>
-      </div>
-    </section>
 
     <section class="card hide" id="companionCard">
       <div class="card-head"><i class="fa-regular fa-bell"></i><h2>付き添いの通知</h2></div>
@@ -570,8 +554,14 @@ textarea.inp{min-height:110px;resize:vertical;line-height:1.7;}
 </div>
 
 <div class="fab-wrap">
-  <div class="fab-bubble" id="fabBubble">困ったらタップ</div>
-  <button class="fab" id="fabBtn" aria-label="お助けAIコンシェルジュを開く"><i class="fa-solid fa-headset"></i></button>
+  <!-- 左下：診察券（受付・検査・支払い・バス乗車の共通キー） -->
+  <button class="fab fab-card" id="cardFab" aria-label="診察券を表示">
+    <i class="fa-solid fa-barcode"></i><span>診察券</span>
+  </button>
+  <div class="fab-right">
+    <div class="fab-bubble" id="fabBubble">困ったらタップ</div>
+    <button class="fab" id="fabBtn" aria-label="お助けAIコンシェルジュを開く"><i class="fa-solid fa-headset"></i></button>
+  </div>
 </div>
 
 <div class="simbar">
@@ -625,7 +615,7 @@ textarea.inp{min-height:110px;resize:vertical;line-height:1.7;}
       </div>
       <div class="card mt"><ul class="list">
         <li><div class="ico">1</div><div class="main"><div class="name">予約をとる</div><div class="meta">夜でも仮受付でき、朝6時に本受付になります</div></div></li>
-        <li><div class="ico">2</div><div class="main"><div class="name">診察券をかざす</div><div class="meta">受付・検査・支払い・バスの乗車に使えます</div></div></li>
+        <li><div class="ico">2</div><div class="main"><div class="name">診察券をかざす</div><div class="meta">左下のボタンから出し、読み取り機にかざします</div></div></li>
         <li><div class="ico">3</div><div class="main"><div class="name">行き先を確認して進む</div><div class="meta">棟・階・ブロックと矢印の色で案内します</div></div></li>
         <li><div class="ico">4</div><div class="main"><div class="name">会計を待たずに帰る</div><div class="meta">診療費は5日後にカードから引き落とされます</div></div></li>
       </ul></div>
@@ -793,12 +783,6 @@ function drawBars(el){
   let h=''; for(let i=0;i<52;i++){const w=[2,3,5][Math.floor(Math.random()*3)];h+=`<span style="width:${w}px;height:${60+Math.random()*40}%"></span>`;}
   el.innerHTML=h;
 }
-function renderCard(){
-  const p=PEOPLE[state.viewing];
-  $('#cardNo').textContent='No. '+p.no;
-  $('.idcard .barcode .num').textContent=''+p.no.replace('-',' ');
-  drawBars($('#bars'));
-}
 function showCardBig(){
   const p=PEOPLE[state.viewing];
   $('#genTitle').textContent='診察券';
@@ -807,12 +791,13 @@ function showCardBig(){
       <div style="color:var(--muted);font-size:.9rem;margin-bottom:.8rem;">No. ${p.no}</div>
       <div class="barcode big"><div class="bars" id="barsBig"></div><div class="num">${p.no.replace('-',' ')}</div></div>
       <p class="use" style="margin-top:.9rem;color:var(--muted);font-size:.9rem;">読み取り機にかざしてください</p>
+      <div class="insurance" style="justify-content:center;"><span class="badge-on"><i class="fa-solid fa-check"></i> 今月の保険証確認 済</span><span>10月2日</span></div>
+      <p class="use" style="margin-top:.7rem;color:var(--muted);font-size:.85rem;">受付・検査・支払い・バスの乗車に使えます</p>
     </div></div>
     <button class="btn btn-primary mt" data-close="genModal">とじる</button>`;
   drawBars($('#barsBig')); openModal('genModal');
 }
-$('#cardBig').addEventListener('click',showCardBig);
-$('#cardBtnSub').addEventListener('click',showCardBig);
+$('#cardFab').addEventListener('click',showCardBig);
 
 /* ===== 交通（往路・復路の時刻をまとめて表示） ===== */
 function renderTransport(){
@@ -1208,7 +1193,7 @@ function aiAnswer(q){
   if(q.includes('領収')) return 'お支払い画面の履歴から領収書・明細を開けます。PDFで保存すれば、ご自宅やコンビニでも印刷できます。';
   if(q.includes('保険証')) return '今月の保険証の確認は10月2日に済んでいます。月が変わったら、受付で保険証またはマイナンバーカードをご提示ください。';
   if(q.includes('Wi-Fi')||q.includes('wifi')) return '設定から院内の無料Wi-Fiにつなげます。パスワードの入力はいりません。';
-  if(q.includes('診察券')||q.includes('バス')) return 'ホーム画面の診察券のバーコードを読み取り機にかざしてください。受付、検査、お支払い、自動運転バスの乗車まで、これ1つで通せます。';
+  if(q.includes('診察券')||q.includes('バス')) return '画面の左下にある診察券のボタンを押して、バーコードを読み取り機にかざしてください。受付、検査、お支払い、自動運転バスの乗車まで、これ1つで通せます。';
   return 'もう少しくわしく教えてください。「次どこに行けばいい？」のように話しかけていただくと、すぐにお答えできます。';
 }
 function pushMsg(t,who='ai'){
@@ -1268,7 +1253,7 @@ $('#wifiBtn').addEventListener('click',()=>{
 
 /* ===== 初期化 ===== */
 function renderAll(){
-  renderGuide(); renderCard(); renderTransport(); renderRoute(); renderCheckins();
+  renderGuide(); renderTransport(); renderRoute(); renderCheckins();
   renderAppts(); renderRecords(); renderPay(); renderMeds(); renderHistory();
   applyEasyText(); measureTop();
 }
