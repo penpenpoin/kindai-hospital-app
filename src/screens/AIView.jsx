@@ -11,7 +11,7 @@ const AVATARS = [
 ]
 
 // 院内マニュアル・よくある質問から答える想定（デモでは固定の回答）
-function faqs(s) {
+export function faqs(s) {
   const next = openTasks(s)[0]
   return [
     {
@@ -55,7 +55,7 @@ export default function AIView() {
           <button
             key={a.id}
             onClick={() => setAvatar(a)}
-            className={`flex-1 py-2 rounded-2xl border font-bold text-sm flex items-center justify-center gap-2 ${avatar.id === a.id ? 'border-indigo-400 bg-indigo-50 text-indigo-700' : 'border-slate-100 bg-white text-slate-500'}`}
+            className={`flex-1 py-2 rounded-2xl border font-bold text-sm flex items-center justify-center gap-2 ${avatar.id === a.id ? 'border-brand-400 bg-brand-50 text-brand-700' : 'border-slate-100 bg-white text-slate-500'}`}
           >
             <span className="text-xl">{a.emoji}</span> {a.name}
           </button>
@@ -80,17 +80,17 @@ export default function AIView() {
 
       <div className="flex flex-wrap gap-2">
         {list.map((f) => (
-          <button key={f.q} onClick={() => ask(f)} className="px-3 py-2 rounded-full bg-white border border-indigo-100 text-indigo-600 text-xs font-bold shadow-sm active:scale-95">
+          <button key={f.q} onClick={() => ask(f)} className="px-3 py-2 rounded-full bg-white border border-brand-100 text-brand-600 text-xs font-bold shadow-sm active:scale-95">
             {f.q}
           </button>
         ))}
       </div>
 
-      <div className="bg-white/80 backdrop-blur-md p-4 rounded-[2rem] shadow-2xl border border-indigo-100 text-center">
-        <p className="text-xs text-indigo-400 mb-3 font-bold tracking-widest">VOICE ASSISTANT</p>
+      <div className="bg-white/80 backdrop-blur-md p-4 rounded-[2rem] shadow-2xl border border-brand-100 text-center">
+        <p className="text-xs text-brand-400 mb-3 font-bold tracking-widest">VOICE ASSISTANT</p>
         <button
           onClick={talk}
-          className={`w-full py-4 rounded-full font-bold flex items-center justify-center gap-2 transition-all ${listening ? 'bg-rose-500 text-white animate-pulse' : 'bg-indigo-600 text-white shadow-lg shadow-indigo-200'}`}
+          className={`w-full py-4 rounded-full font-bold flex items-center justify-center gap-2 transition-all ${listening ? 'bg-rose-500 text-white animate-pulse' : 'bg-brand-600 text-white shadow-lg shadow-brand-200'}`}
         >
           <Mic size={20} /> {listening ? '聞き取り中…' : t('押して話す', 'おして はなす')}
         </button>
@@ -103,7 +103,7 @@ export default function AIView() {
 function AvatarBubble({ emoji, children }) {
   return (
     <div className="flex justify-start gap-2">
-      <div className="w-9 h-9 rounded-full bg-indigo-600 flex items-center justify-center text-lg shrink-0">{emoji}</div>
+      <div className="w-9 h-9 rounded-full bg-brand-600 flex items-center justify-center text-lg shrink-0">{emoji}</div>
       <div className="p-3.5 rounded-[1.6rem] rounded-tl-none max-w-[80%] shadow-sm text-sm leading-relaxed bg-white border border-slate-100 text-slate-700">{children}</div>
     </div>
   )

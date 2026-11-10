@@ -1,8 +1,9 @@
-import { IdCard, Footprints, Users, ChevronRight, TriangleExclamationPoint, Map, ClipboardList, CreditCard, Activity, Bus, Car, Wifi, WifiOff, Check, Mic, Coffee, FileText, MapPin } from 'lucide-react'
+import { IdCard, Footprints, Users, ChevronRight, TriangleExclamationPoint, Map, ClipboardList, CreditCard, Activity, Bus, Car, Wifi, WifiOff, Check, Mic, Coffee, FileText, MapPin, Sparkles, Pill, Receipt, Store, Siren } from 'lucide-react'
 import { useSim } from '../sim/context.js'
 import { PLACES, openTasks, BILL } from '../sim/model.js'
 import { Card, Sign, Btn, Demo } from '../components/ui.jsx'
 import Barcode, { PATIENT } from '../components/Barcode.jsx'
+import { faqs } from './AIView.jsx'
 
 // ---------------------------------------------------------------
 // 一番上の「いまの状況」カード（場面ごとに中身が入れ替わる）
@@ -27,7 +28,7 @@ function StatusCard() {
     inner = (
       <Row icon={<Footprints size={20} />} label="泉ケ丘駅 → 病院（550m）">
         歩いて <span className="text-2xl">約6分</span>
-        <span className="block text-[11px] font-normal text-blue-100">{t('病院に着いたら自動で受付します', 'ついたら じどうで うけつけ')}</span>
+        <span className="block text-[11px] font-normal text-brand-100">{t('病院に着いたら自動で受付します', 'ついたら じどうで うけつけ')}</span>
       </Row>
     )
   } else if (s.scene === 'hospital') {
@@ -53,7 +54,7 @@ function StatusCard() {
       inner = (
         <Row icon={<Users size={20} />} label={t('現在の待ち状況', 'まっている人')} onClick={() => d({ type: 'VIEW', view: 'nav' })}>
           あと <span className="text-2xl">{s.queueAhead}</span> 人
-          {s.waitPlace && <span className="block text-[11px] font-normal text-blue-100">{PLACES[s.waitPlace]}で待機中・呼ばれたら通知</span>}
+          {s.waitPlace && <span className="block text-[11px] font-normal text-brand-100">{PLACES[s.waitPlace]}で待機中・呼ばれたら通知</span>}
         </Row>
       )
   } else if (s.scene === 'after') {
@@ -71,12 +72,12 @@ function StatusCard() {
   }
 
   return (
-    <div className="relative overflow-hidden bg-gradient-to-br from-indigo-700 to-blue-500 rounded-[2.5rem] p-6 shadow-2xl shadow-blue-200 text-white">
+    <div className="relative overflow-hidden bg-gradient-to-br from-brand-600 to-brand-500 rounded-[2.5rem] p-6 shadow-2xl shadow-brand-200 text-white">
       <div className="absolute -right-10 -top-10 w-40 h-40 bg-white/10 rounded-full blur-3xl" />
       <div className="relative z-10">
         <div className="flex justify-between items-start mb-5 gap-2">
           <div>
-            <p className="text-blue-100 text-xs font-bold tracking-wider mb-1">{greeting}</p>
+            <p className="text-brand-100 text-xs font-bold tracking-wider mb-1">{greeting}</p>
             <h2 className="text-2xl font-bold tracking-tight">{t('田中 太郎 様', '田中さん')}</h2>
           </div>
           <div className="bg-white/20 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-bold whitespace-nowrap">{chip}</div>
@@ -95,9 +96,9 @@ function Row({ icon, label, children, onClick, pulse }) {
       className={`w-full text-left bg-white/15 backdrop-blur-md rounded-2xl p-4 flex justify-between items-center border border-white/20 ${pulse ? 'animate-pulse' : ''}`}
     >
       <div className="flex items-center gap-3">
-        <div className="bg-white text-indigo-600 w-10 h-10 rounded-full flex items-center justify-center shadow-lg shrink-0">{icon}</div>
+        <div className="bg-white text-brand-600 w-10 h-10 rounded-full flex items-center justify-center shadow-lg shrink-0">{icon}</div>
         <div>
-          <p className="text-[10px] text-blue-100 font-bold">{label}</p>
+          <p className="text-[10px] text-brand-100 font-bold">{label}</p>
           <p className="font-bold text-lg leading-tight">{children}</p>
         </div>
       </div>
@@ -128,10 +129,10 @@ function NextAction() {
   else a = { icon: <FileText size={18} />, text: t('領収書を見る', 'りょうしゅうしょ'), sub: 'PDF で保存・コンビニ印刷', go: () => d({ type: 'VIEW', view: 'pay' }) }
 
   return (
-    <button onClick={a.go ?? undefined} className="w-full bg-white rounded-3xl p-4 flex items-center gap-4 shadow-xl shadow-slate-200/50 border-2 border-indigo-100 text-left active:scale-[.99] transition-all">
-      {a.sign ? <Sign id={a.sign} size="sm" /> : <div className="w-10 h-10 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">{a.icon}</div>}
+    <button onClick={a.go ?? undefined} className="w-full bg-white rounded-3xl p-4 flex items-center gap-4 shadow-xl shadow-slate-200/50 border-2 border-brand-100 text-left active:scale-[.99] transition-all">
+      {a.sign ? <Sign id={a.sign} size="sm" /> : <div className="w-10 h-10 rounded-2xl bg-brand-50 text-brand-600 flex items-center justify-center shrink-0">{a.icon}</div>}
       <div className="flex-1 min-w-0">
-        <p className="text-[10px] font-black text-indigo-500 tracking-widest">{t('いま やること', 'つぎは これ')}</p>
+        <p className="text-[10px] font-black text-brand-500 tracking-widest">{t('いま やること', 'つぎは これ')}</p>
         <p className="font-bold text-slate-800 leading-snug">{a.text}</p>
         {a.sub && <p className="text-xs text-slate-500">{a.sub}</p>}
       </div>
@@ -212,18 +213,110 @@ function Transit({ back }) {
   )
 }
 
-const MENU = [
-  { view: 'nav', Icon: Map, label: ['受診ガイド', 'あんない'], color: 'text-blue-500', bg: 'bg-blue-50' },
-  { view: 'reception', Icon: ClipboardList, label: ['予約・受付', 'うけつけ'], color: 'text-emerald-500', bg: 'bg-emerald-50' },
-  { view: 'pay', Icon: CreditCard, label: ['お支払い', 'しはらい'], color: 'text-amber-500', bg: 'bg-amber-50' },
-  { view: 'records', Icon: Activity, label: ['お薬と記録', 'きろく'], color: 'text-purple-500', bg: 'bg-purple-50' },
+// バーコードのすぐ下に並ぶ、よく使う4つ
+const ACTIONS = [
+  { view: 'reception', Icon: ClipboardList, label: ['受付', 'うけつけ'] },
+  { view: 'nav', Icon: Map, label: ['院内案内', 'あんない'] },
+  { view: 'pay', Icon: CreditCard, label: ['支払い', 'しはらい'] },
+  { view: 'ai', emoji: '🐟', label: ['AIに相談', 'そうだん'] },
 ]
+
+// サービス一覧（小さなアイコンを並べる）。ask は AI に質問した状態で開く
+const SERVICES = [
+  { Icon: Activity, color: 'text-purple-500', label: ['体調日記', 'にっき'], view: 'records' },
+  { Icon: Sparkles, color: 'text-emerald-500', label: ['AI問診票', 'メモ'], view: 'records' },
+  { Icon: Pill, color: 'text-sky-500', label: ['お薬', 'くすり'], view: 'records' },
+  { Icon: Receipt, color: 'text-amber-500', label: ['領収書', 'りょうしゅう'], view: 'pay' },
+  { Icon: Wifi, color: 'text-blue-500', label: ['院内Wi-Fi', 'Wi-Fi'], action: { type: 'WIFI' } },
+  { Icon: Car, color: 'text-slate-500', label: ['駐車場', 'ちゅうしゃ'], ask: '駐車料金はいくら？' },
+  { Icon: Store, color: 'text-orange-500', label: ['カフェ・売店', 'おみせ'], ask: 'コンビニはある？' },
+  { Icon: Siren, color: 'text-rose-500', label: ['救急外来', 'きゅうきゅう'], ask: '救急外来はどこ？' },
+]
+
+function HeroCard() {
+  const { d, t } = useSim()
+  return (
+    <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/60 border border-slate-100 overflow-hidden">
+      {/* 診察券：開いた瞬間に一番上に見える。タップで大きく表示 */}
+      <button onClick={() => d({ type: 'VIEW', view: 'card' })} className="w-full text-left px-5 pt-4 pb-3 active:bg-slate-50">
+        <div className="flex items-center justify-between mb-2">
+          <p className="text-xs font-bold text-slate-500 flex items-center gap-1.5">
+            <IdCard size={16} className="text-brand-600" /> {t('診察券', 'しんさつけん')}
+          </p>
+          <p className="text-[11px] font-bold text-brand-600 flex items-center">
+            {t('タップで大きく', 'おすと おおきく')} <ChevronRight size={14} />
+          </p>
+        </div>
+        <Barcode className="w-full h-16" />
+        <div className="flex justify-between items-center mt-1.5">
+          <p className="font-mono font-bold text-slate-800 tracking-[0.25em]">{PATIENT.no}</p>
+          <p className="text-[10px] text-slate-400">{t('受付機・支払機にかざす', 'きかいに かざす')}</p>
+        </div>
+      </button>
+      <div className="grid grid-cols-4 border-t border-slate-100 py-3">
+        {ACTIONS.map((a) => (
+          <button key={a.view} onClick={() => d({ type: 'VIEW', view: a.view })} className="flex flex-col items-center gap-1.5 active:scale-95 transition-all">
+            <div className="w-12 h-12 rounded-full bg-brand-50 text-brand-600 flex items-center justify-center text-2xl">
+              {a.emoji ?? <a.Icon size={22} />}
+            </div>
+            <span className="text-[11px] font-bold text-slate-700 whitespace-nowrap">{t(...a.label)}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function Services() {
+  const { s, d, t } = useSim()
+  const list = faqs(s)
+  const tap = (x) => {
+    if (x.ask) {
+      const f = list.find((q) => q.q === x.ask)
+      d({ type: 'ASK', q: f.q, answer: f.a })
+      d({ type: 'VIEW', view: 'ai' })
+    } else if (x.action) d(x.action)
+    else d({ type: 'VIEW', view: x.view })
+  }
+  return (
+    <div className="bg-white rounded-3xl p-4 shadow-sm border border-slate-100">
+      <p className="text-xs font-bold text-slate-500 mb-3">{t('サービス', 'べんりな きのう')}</p>
+      <div className="grid grid-cols-4 gap-y-4">
+        {SERVICES.map((x) => (
+          <button key={x.label[0]} onClick={() => tap(x)} className="flex flex-col items-center gap-1.5 active:scale-95 transition-all">
+            <div className={`w-11 h-11 rounded-2xl bg-slate-50 flex items-center justify-center ${x.color}`}>
+              {x.Icon === Wifi && s.wifi ? <Check size={20} className="text-emerald-500" /> : <x.Icon size={22} />}
+            </div>
+            <span className="text-[10.5px] font-bold text-slate-600 whitespace-nowrap">{t(...x.label)}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// 提案書のキャッチコピーをバナーに
+function Banner() {
+  const { t } = useSim()
+  return (
+    <div className="rounded-3xl p-5 bg-gradient-to-r from-brand-600 to-orange-400 text-white relative overflow-hidden">
+      <div className="absolute -right-4 -bottom-6 text-7xl opacity-30 rotate-[-12deg]">🐟</div>
+      <p className="text-[11px] font-bold text-white/80">{t('近大病院のスマート通院', 'スマホで かんたん')}</p>
+      <p className="text-lg font-black leading-snug mt-1">
+        まだ待合室で
+        <br />
+        待ってるの？
+      </p>
+      <p className="text-[11px] font-bold mt-2 bg-white/20 inline-block px-2.5 py-1 rounded-full">{t('スマホが診察券になる病院', 'スマホが しんさつけん')}</p>
+    </div>
+  )
+}
 
 export default function HomeView() {
   const { s, d, t } = useSim()
   const open = openTasks(s)
   return (
-    <div className="p-5 fade-in space-y-5 pb-8">
+    <div className="p-4 fade-in space-y-4 pb-8">
       {!s.flags.online && (
         <div className="bg-slate-800 text-white p-3.5 rounded-2xl flex items-center gap-3 text-sm">
           <WifiOff size={20} className="shrink-0" />
@@ -231,32 +324,16 @@ export default function HomeView() {
             <b>{t('オフラインです', 'つながっていません')}</b>
             <br />
             <span className="text-xs text-slate-300">
-              {t('受付番号と予定はこのまま見られます。', '')}
+              {t('診察券と予定はこのまま見られます。', '')}
               {s.pending.length > 0 && `送信待ち ${s.pending.length} 件は、つながったら自動で送ります。`}
             </span>
           </p>
         </div>
       )}
 
-      <StatusCard />
+      <HeroCard />
 
-      {/* 診察券：ホームを開いたらすぐ見える位置に。タップで大きく表示 */}
-      <button
-        onClick={() => d({ type: 'VIEW', view: 'card' })}
-        className="w-full bg-white rounded-3xl p-4 shadow-xl shadow-slate-200/50 border border-slate-100 text-left active:scale-[.99] transition-all"
-      >
-        <div className="flex items-center justify-between mb-2">
-          <p className="text-xs font-bold text-slate-500 flex items-center gap-1.5">
-            <IdCard size={16} className="text-indigo-500" /> {t('診察券', 'しんさつけん')}
-          </p>
-          <p className="text-[11px] font-bold text-indigo-500">{t('タップで大きく表示', 'おすと おおきく なります')}</p>
-        </div>
-        <Barcode className="w-full h-12" />
-        <div className="flex justify-between items-center mt-1.5">
-          <p className="font-mono font-bold text-slate-700 tracking-[0.25em] text-sm">{PATIENT.no}</p>
-          <p className="text-[10px] text-slate-400">{t('受付機・支払機にかざす', 'きかいに かざす')}</p>
-        </div>
-      </button>
+      <StatusCard />
 
       {/* 未完了の検査アラート（院内にいる間） */}
       {(s.scene === 'hospital' || s.scene === 'after') && s.checkedIn && open.some((x) => x.id === 'blood') && (
@@ -276,37 +353,15 @@ export default function HomeView() {
 
       {(s.scene === 'hospital' || s.scene === 'after') && <TodayTasks />}
 
-      <div className="grid grid-cols-2 gap-4">
-        {MENU.map((m) => (
-          <button
-            key={m.view}
-            onClick={() => d({ type: 'VIEW', view: m.view })}
-            className="bg-white p-5 rounded-[2rem] flex flex-col items-center gap-3 shadow-sm border border-slate-100 hover:shadow-md transition-all active:scale-95"
-          >
-            <div className={`${m.bg} ${m.color} p-4 rounded-2xl shadow-inner`}>
-              <m.Icon />
-            </div>
-            <span className="font-bold text-slate-700 text-sm tracking-tight">{t(...m.label)}</span>
-          </button>
-        ))}
-      </div>
+      <Services />
 
       {(s.scene === 'before' || s.scene === 'travel') && <Transit />}
       {s.scene === 'home' && <Transit back />}
 
-      {s.scene === 'hospital' && (
-        <button
-          onClick={() => d({ type: 'WIFI' })}
-          className={`w-full p-4 rounded-2xl flex items-center gap-3 border text-left ${s.wifi ? 'bg-emerald-50 border-emerald-100 text-emerald-700' : 'bg-white border-slate-100 text-slate-700'}`}
-        >
-          <Wifi size={20} />
-          <span className="font-bold text-sm flex-1">{s.wifi ? t('院内Wi-Fiに接続中', 'Wi-Fi つながっています') : t('院内Wi-Fiにワンタッチで接続', 'Wi-Fi に つなぐ')}</span>
-          {s.wifi ? <Check size={18} /> : <ChevronRight size={18} className="text-slate-300" />}
-        </button>
-      )}
+      <Banner />
 
       {/* 審査員がタップで試せる「出来事」 */}
-      <div className="space-y-2 pt-2">
+      <div className="space-y-2 pt-1">
         {s.scene === 'travel' && <Demo onClick={() => d({ type: 'ARRIVE' })}>病院に着く（A）</Demo>}
         {s.scene === 'hospital' && open.length > 0 && <Demo onClick={() => d({ type: 'LEAVE' })}>検査を残したまま出口へ向かう（X）</Demo>}
         {s.scene === 'hospital' && s.checkedIn && !s.called && open[0]?.id === 'consult' && <Demo onClick={() => d({ type: 'CALL' })}>診察に呼ばれる（C）</Demo>}

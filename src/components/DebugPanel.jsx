@@ -101,7 +101,7 @@ export default function DebugPanel({ onClose, onHelp }) {
               <li key={i}>
                 <button
                   onClick={() => d({ type: 'GOTO', n: i })}
-                  className={`w-full text-left px-2 py-1 rounded ${i === s.step ? 'bg-indigo-500 text-white font-bold' : i < s.step ? 'text-slate-400 hover:bg-white/5' : 'text-slate-500 hover:bg-white/5'}`}
+                  className={`w-full text-left px-2 py-1 rounded ${i === s.step ? 'bg-brand-500 text-white font-bold' : i < s.step ? 'text-slate-400 hover:bg-white/5' : 'text-slate-500 hover:bg-white/5'}`}
                 >
                   {i + 1}. {st.label}
                 </button>

@@ -75,9 +75,9 @@ function WaitChooser() {
           <button
             key={w.id}
             onClick={() => d({ type: 'WAIT_AT', place: w.id })}
-            className={`w-full flex items-center gap-3 p-3 rounded-2xl border text-left transition-all ${s.waitPlace === w.id ? 'border-indigo-400 bg-indigo-50' : 'border-slate-100 bg-slate-50'}`}
+            className={`w-full flex items-center gap-3 p-3 rounded-2xl border text-left transition-all ${s.waitPlace === w.id ? 'border-brand-400 bg-brand-50' : 'border-slate-100 bg-slate-50'}`}
           >
-            <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-indigo-500 shadow-sm shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-brand-500 shadow-sm shrink-0">
               <w.Icon size={20} />
             </div>
             <div className="flex-1 min-w-0">
@@ -85,7 +85,7 @@ function WaitChooser() {
               <p className={`text-[11px] font-bold ${w.tone === 'rose' ? 'text-rose-500' : 'text-emerald-600'}`}>{w.note}</p>
             </div>
             <span className="text-[11px] text-slate-400 whitespace-nowrap">診察室まで {w.walk}</span>
-            {s.waitPlace === w.id && <Check size={18} className="text-indigo-600" />}
+            {s.waitPlace === w.id && <Check size={18} className="text-brand-600" />}
           </button>
         ))}
       </div>
@@ -117,7 +117,7 @@ export default function NavView() {
     <Page title={t('院内案内', 'あんない')} badge={<Pill>📍 {PLACES[s.location]}</Pill>}>
       {(s.scene === 'before' || s.scene === 'travel' || s.scene === 'home') && (
         <Card className="text-center py-8">
-          <MapPin className="mx-auto text-indigo-400 mb-3" size={36} />
+          <MapPin className="mx-auto text-brand-400 mb-3" size={36} />
           <p className="font-bold text-slate-700">{s.scene === 'home' ? 'おつかれさまでした' : t('病院に着いたら、ここで次の行き先を案内します', 'びょういんに ついたら あんないします')}</p>
           <p className="text-xs text-slate-500 mt-2">{t('行き先は「予約・検査の順番」と「混み具合」から自動で決まります', '')}</p>
         </Card>
@@ -135,7 +135,7 @@ export default function NavView() {
               </>
             ) : (
               <>
-                <route.arrow className="w-16 h-16 text-indigo-600 mb-2 animate-bounce" />
+                <route.arrow className="w-16 h-16 text-brand-600 mb-2 animate-bounce" />
                 <p className="font-bold text-lg text-slate-700 px-4 text-center">{t(...route.head)}</p>
               </>
             )}
@@ -146,7 +146,7 @@ export default function NavView() {
           <div className="space-y-2">
             {route.steps.map(([name, sub], i) => (
               <div key={name} className={`flex items-center gap-4 p-3 rounded-2xl ${i === 0 && !arrived ? 'bg-slate-50' : 'opacity-50'}`}>
-                <div className={`${i === 0 && !arrived ? 'bg-indigo-500' : 'bg-slate-300'} text-white w-8 h-8 rounded-full flex items-center justify-center font-bold italic shrink-0`}>{i + 1}</div>
+                <div className={`${i === 0 && !arrived ? 'bg-brand-500' : 'bg-slate-300'} text-white w-8 h-8 rounded-full flex items-center justify-center font-bold italic shrink-0`}>{i + 1}</div>
                 <div>
                   <p className="text-sm font-bold text-slate-800">{name}</p>
                   {sub && <p className="text-xs text-slate-500">{sub}</p>}

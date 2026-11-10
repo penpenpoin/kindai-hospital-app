@@ -38,7 +38,7 @@ export default function RecordsView() {
             <button
               key={m}
               onClick={() => d({ type: 'DIARY', mood: m })}
-              className={`py-3 rounded-2xl border font-bold text-sm flex flex-col items-center gap-1 ${s.diaryToday === m ? 'border-indigo-400 bg-indigo-50 text-indigo-700' : 'border-slate-100 bg-slate-50 text-slate-600'}`}
+              className={`py-3 rounded-2xl border font-bold text-sm flex flex-col items-center gap-1 ${s.diaryToday === m ? 'border-brand-400 bg-brand-50 text-brand-700' : 'border-slate-100 bg-slate-50 text-slate-600'}`}
             >
               <span className="text-2xl">{e}</span>
               {m}
@@ -52,7 +52,7 @@ export default function RecordsView() {
           <div key={x.date} className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex gap-3 items-center">
             <div className="w-9 h-9 rounded-full bg-purple-50 text-purple-500 font-black flex items-center justify-center shrink-0">{x.level}</div>
             <div className="min-w-0">
-              <p className="text-[11px] font-bold text-indigo-500">
+              <p className="text-[11px] font-bold text-brand-500">
                 {x.date}　{x.part}
               </p>
               <p className="text-sm font-bold text-slate-700">
@@ -80,7 +80,7 @@ export default function RecordsView() {
         ].map(([date, name, Icon]) => (
           <div key={name} className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex justify-between items-center">
             <div>
-              <p className="text-[10px] font-bold text-indigo-500 mb-1">{date}</p>
+              <p className="text-[10px] font-bold text-brand-500 mb-1">{date}</p>
               <p className="font-bold text-slate-700 text-sm">{name}</p>
             </div>
             <Icon className="text-slate-300" />

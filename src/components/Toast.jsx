@@ -17,12 +17,12 @@ export default function Toast() {
       <button
         onClick={() => d({ type: 'CLEAR_TOAST', id: tt.id })}
         className={`w-full text-left rounded-2xl p-3.5 flex gap-3 items-start shadow-2xl border backdrop-blur-xl ${
-          call ? 'bg-indigo-600/95 text-white border-indigo-400' : 'bg-white/95 text-slate-800 border-slate-200'
+          call ? 'bg-brand-600/95 text-white border-brand-400' : 'bg-white/95 text-slate-800 border-slate-200'
         }`}
       >
-        <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-xl shrink-0 ${call ? 'bg-white/20' : 'bg-indigo-50'}`}>🐟</div>
+        <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-xl shrink-0 ${call ? 'bg-white/20' : 'bg-brand-50'}`}>🐟</div>
         <div className="min-w-0">
-          <p className={`text-[10px] font-bold ${call ? 'text-indigo-100' : 'text-slate-400'}`}>KIND-AI ・ いま</p>
+          <p className={`text-[10px] font-bold ${call ? 'text-brand-100' : 'text-slate-400'}`}>KIND-AI ・ いま</p>
           <p className="text-sm font-bold leading-snug">{tt.text}</p>
         </div>
       </button>

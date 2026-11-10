@@ -15,13 +15,13 @@ export default function CardView() {
   return (
     <Page title={t('診察券', 'しんさつけん')} badge={<Pill tone="green">プラスチックの診察券は不要</Pill>}>
       {/* 診察券本体 */}
-      <div className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-indigo-700 to-blue-500 text-white p-5 shadow-2xl shadow-blue-200">
+      <div className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-brand-600 to-brand-500 text-white p-5 shadow-2xl shadow-brand-200">
         <div className="absolute -right-12 -bottom-12 w-48 h-48 bg-white/10 rounded-full blur-2xl" />
         <div className="relative flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center text-indigo-600 font-black italic">K</div>
+            <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center text-brand-600 font-black italic">K</div>
             <div>
-              <p className="text-[10px] font-bold text-blue-100 leading-none">KINDAI UNIVERSITY HOSPITAL</p>
+              <p className="text-[10px] font-bold text-brand-100 leading-none">KINDAI UNIVERSITY HOSPITAL</p>
               <p className="font-bold leading-tight">近畿大学病院 診察券</p>
             </div>
           </div>
@@ -34,10 +34,10 @@ export default function CardView() {
         </div>
         <div className="relative mt-4 flex justify-between items-end">
           <div>
-            <p className="text-[10px] text-blue-100">{PATIENT.kana}</p>
+            <p className="text-[10px] text-brand-100">{PATIENT.kana}</p>
             <p className="text-xl font-bold">{PATIENT.name} 様</p>
           </div>
-          <p className="text-xs text-blue-100">{t(`生年月日 ${PATIENT.birth}`, '')}</p>
+          <p className="text-xs text-brand-100">{t(`生年月日 ${PATIENT.birth}`, '')}</p>
         </div>
       </div>
 
@@ -66,7 +66,7 @@ export default function CardView() {
           <div className="space-y-3">
             {USES.map(([Icon, name, sub]) => (
               <div key={name} className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-500 flex items-center justify-center shrink-0">
+                <div className="w-9 h-9 rounded-xl bg-brand-50 text-brand-500 flex items-center justify-center shrink-0">
                   <Icon size={18} />
                 </div>
                 <div>

@@ -62,11 +62,11 @@ export function Pill({ children, tone = 'blue' }) {
 
 export function Btn({ children, tone = 'primary', className = '', ...rest }) {
   const tones = {
-    primary: 'bg-indigo-600 text-white shadow-lg shadow-indigo-200',
+    primary: 'bg-brand-600 text-white shadow-lg shadow-brand-200',
     dark: 'bg-slate-800 text-white',
     ghost: 'bg-slate-100 text-slate-700',
     danger: 'bg-rose-600 text-white shadow-lg shadow-rose-200',
-    white: 'bg-white text-indigo-700',
+    white: 'bg-white text-brand-700',
   }
   return (
     <button
@@ -83,7 +83,7 @@ export function Demo({ children, onClick }) {
   return (
     <button
       onClick={onClick}
-      className="w-full text-[11px] font-bold text-slate-400 border border-dashed border-slate-300 rounded-xl py-2 hover:text-indigo-500 hover:border-indigo-300"
+      className="w-full text-[11px] font-bold text-slate-400 border border-dashed border-slate-300 rounded-xl py-2 hover:text-brand-500 hover:border-brand-300"
     >
       ▶ デモ：{children}
     </button>
