@@ -64,7 +64,11 @@ export default function PayView() {
             <p className="font-bold text-slate-700">{t('診察が終わると、ここに金額が表示されます', 'しんさつの あとに でます')}</p>
             <p className="text-xs text-slate-500 mt-2">カード登録：{s.flags.card ? '済み（後払いで帰れます）' : '未登録'}</p>
           </Card>
-          {!s.flags.card && <CardHelp />}
+          {!s.flags.card && (
+            <div data-anchor="cardhelp">
+              <CardHelp />
+            </div>
+          )}
         </>
       ) : open.length ? (
         <Card className="border-rose-100 bg-rose-50">
@@ -99,7 +103,7 @@ export default function PayView() {
             )}
           </Card>
 
-          <div className="space-y-3">
+          <div className="space-y-3" data-anchor="paymethods">
             {methods.map((m) => (
               <button
                 key={m.id}
@@ -119,7 +123,11 @@ export default function PayView() {
               </button>
             ))}
           </div>
-          {!s.flags.card && <CardHelp />}
+          {!s.flags.card && (
+            <div data-anchor="cardhelp">
+              <CardHelp />
+            </div>
+          )}
         </>
       )}
     </Page>

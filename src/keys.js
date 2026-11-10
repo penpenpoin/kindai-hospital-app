@@ -15,6 +15,8 @@ export const KEYMAP = [
   { keys: ['K'], label: 'カード登録 あり/なし', action: { type: 'TOGGLE', flag: 'card' } },
   { keys: ['Y'], label: 'やさしい表示 ON/OFF', action: { type: 'TOGGLE', flag: 'easy' } },
   { keys: ['M'], label: '音声読み上げ ON/OFF', action: { type: 'TOGGLE', flag: 'sound' } },
+  { keys: ['F'], label: '提案資料の項目から、その機能へ飛ぶ' },
+  { keys: ['B'], label: 'お知らせ（ベル）を開く／閉じる' },
   { keys: ['L'], label: 'イベントログを表示／非表示' },
   { keys: ['R'], label: '最初からやり直す' },
   { keys: ['?'], label: 'このキー一覧' },
@@ -35,6 +37,8 @@ export function keyToCommand(e) {
   if (e.key === 'ArrowLeft') return { sim: { type: 'PREV' } }
   if (k === 'r') return { sim: { type: 'RESET' } }
   if (k === 'l') return { ui: 'log' }
+  if (k === 'f') return { ui: 'guide' }
+  if (k === 'b') return { ui: 'bell' }
   if (e.key === '?' || (k === '/' && e.shiftKey)) return { ui: 'help' }
   if (e.key === 'Escape') return { ui: 'close' }
   if (SINGLE[k]) return { sim: SINGLE[k] }

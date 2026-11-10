@@ -358,10 +358,14 @@ export default function HomeView() {
 
       <Services />
 
-      {(s.scene === 'before' || s.scene === 'travel') && <Transit />}
-      {s.scene === 'home' && <Transit back />}
+      <div data-anchor="transit">
+        {(s.scene === 'before' || s.scene === 'travel') && <Transit />}
+        {s.scene === 'home' && <Transit back />}
+      </div>
 
-      <Banner />
+      <div data-anchor="banner">
+        <Banner />
+      </div>
 
       {/* 審査員がタップで試せる「出来事」 */}
       <div className="space-y-2 pt-1">

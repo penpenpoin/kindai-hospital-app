@@ -8,6 +8,8 @@ import Toast from './components/Toast.jsx'
 import LeaveAlert from './components/LeaveAlert.jsx'
 import DebugPanel from './components/DebugPanel.jsx'
 import HelpOverlay from './components/HelpOverlay.jsx'
+import GuideOverlay from './components/GuideOverlay.jsx'
+import NoticeCenter, { osSupported } from './components/NoticeCenter.jsx'
 import HomeView from './screens/HomeView.jsx'
 import NavView from './screens/NavView.jsx'
 import ReceptionView from './screens/ReceptionView.jsx'
@@ -39,6 +41,10 @@ export default function App() {
   const [s, d] = useReducer(reducer, undefined, init)
   const [showLog, setShowLog] = useState(() => window.innerWidth >= 1024)
   const [help, setHelp] = useState(false)
+  const [guide, setGuide] = useState(false)
+  const [bell, setBell] = useState(false)
+  const bellRef = useRef(null) // キーボード（B）から最新の openBell を呼ぶため
+  const [seen, setSeen] = useState(0) // ここまで読んだお知らせの id
   const mainRef = useRef(null)
   const easy = s.flags.easy
   const t = useCallback((normal, easyText) => (easy && easyText ? easyText : normal), [easy])
@@ -53,7 +59,12 @@ export default function App() {
       if (cmd.sim) d(cmd.sim)
       if (cmd.ui === 'log') setShowLog((v) => !v)
       if (cmd.ui === 'help') setHelp((v) => !v)
-      if (cmd.ui === 'close') setHelp(false)
+      if (cmd.ui === 'guide') setGuide((v) => !v)
+      if (cmd.ui === 'bell') bellRef.current?.()
+      if (cmd.ui === 'close') {
+        setHelp(false)
+        setGuide(false)
+      }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
@@ -68,6 +79,52 @@ export default function App() {
   useEffect(() => {
     mainRef.current?.scrollTo({ top: 0 })
   }, [s.view, s.step])
+
+  // 提案資料からジャンプしたとき：該当箇所までスクロールして光らせる
+  useEffect(() => {
+    if (!s.anchor) return
+    const id = setTimeout(() => {
+      const el = mainRef.current?.querySelector(`[data-anchor="${s.anchor.id}"]`)
+      if (!el) return
+      el.scrollIntoView({ block: 'center', behavior: 'smooth' })
+      el.classList.remove('jump-flash')
+      void el.offsetWidth
+      el.classList.add('jump-flash')
+    }, 120)
+    return () => clearTimeout(id)
+  }, [s.anchor?.seq])
+
+  // 新しいお知らせ → 端末の通知（許可があれば）＋スマホならバイブ
+  useEffect(() => {
+    const n = s.lastNotice
+    if (!n) return
+    try {
+      if (n.tone !== 'info') navigator.vibrate?.(n.tone === 'urgent' ? [300, 120, 300, 120, 300] : [200, 100, 200])
+    } catch {
+      /* noop */
+    }
+    if (!s.flags.osNotify || !osSupported() || Notification.permission !== 'granted') return
+    try {
+      const os = new Notification(n.tone === 'urgent' ? '⚠ KIND-AI 近大病院' : 'KIND-AI 近大病院', { body: n.text, tag: `kindai-${n.id}`, requireInteraction: n.tone !== 'info' })
+      os.onclick = () => {
+        window.focus()
+        if (n.view) d({ type: 'VIEW', view: n.view })
+        os.close()
+      }
+    } catch {
+      /* ページから直接通知を出せないブラウザ（Android Chrome 等）では、アプリ内のお知らせのみ */
+    }
+  }, [s.lastNotice?.id]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (s.notices.length === 0) setSeen(0)
+  }, [s.notices.length])
+  const unread = s.notices.filter((n) => n.id > seen).length
+  const openBell = () => {
+    setBell((v) => !v)
+    setSeen(s.notices.reduce((m, n) => Math.max(m, n.id), 0))
+  }
+  bellRef.current = openBell
 
   // 音声（帰宅防止アラート・呼び出し）
   useEffect(() => {
@@ -107,6 +164,7 @@ export default function App() {
               <button onClick={() => setShowLog((v) => !v)} className={`${showLog ? 'text-emerald-400' : 'text-white/40'} font-bold`} title="L">
                 LOG
               </button>
+              <button onClick={() => setGuide(true)} className="text-white/70 font-bold" title="提案資料から機能へ飛ぶ (F)">資料</button>
               <button onClick={() => setHelp(true)} className="text-white/40 font-bold" title="?">?</button>
             </div>
           </div>
@@ -118,9 +176,13 @@ export default function App() {
             </button>
             <div className="flex gap-1 items-center">
               {!s.flags.online && <span className="text-[10px] font-bold bg-slate-800 text-white px-2 py-0.5 rounded-full">オフライン</span>}
-              <button className="p-2 text-slate-400 hover:text-brand-600 relative">
+              <button onClick={openBell} className={`p-2 hover:text-brand-600 relative ${bell ? 'text-brand-600' : 'text-slate-400'}`} aria-label={`お知らせ（未読 ${unread} 件）`}>
                 <Bell size={20} />
-                {s.toast && <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full" />}
+                {unread > 0 && (
+                  <span className="absolute top-0.5 right-0 min-w-[18px] h-[18px] px-1 bg-brand-600 text-white text-[10px] font-black rounded-full flex items-center justify-center">
+                    {unread > 9 ? '9+' : unread}
+                  </span>
+                )}
               </button>
               <button
                 onClick={() => d({ type: 'VIEW', view: 'account' })}
@@ -140,11 +202,13 @@ export default function App() {
 
           <BottomNav />
           <LeaveAlert />
+          {bell && <NoticeCenter onClose={() => setBell(false)} />}
         </div>
 
         {/* ===== デバッグパネル ===== */}
         {showLog && <DebugPanel onClose={() => setShowLog(false)} onHelp={() => setHelp(true)} />}
         {help && <HelpOverlay onClose={() => setHelp(false)} />}
+        {guide && <GuideOverlay onClose={() => setGuide(false)} />}
       </div>
     </Sim.Provider>
   )

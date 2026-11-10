@@ -153,9 +153,17 @@ export default function NavView() {
         </Card>
       )}
 
-      {route && <Signboard dest={dest} />}
+      {route && (
+        <div data-anchor="signboard">
+          <Signboard dest={dest} />
+        </div>
+      )}
 
-      {s.scene === 'hospital' && !s.called && open[0]?.id === 'consult' && <WaitChooser />}
+      {s.scene === 'hospital' && !s.called && open[0]?.id === 'consult' && (
+        <div data-anchor="wait">
+          <WaitChooser />
+        </div>
+      )}
 
       <Btn tone="ghost" onClick={() => d({ type: 'VIEW', view: 'map' })}>
         <MapPin size={18} /> {t('院内マップで行き先をさがす', 'ちずで さがす')}

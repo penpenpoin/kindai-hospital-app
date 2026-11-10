@@ -32,3 +32,6 @@ body { font-family: 'Noto Sans JP', system-ui, sans-serif; background: #eef0f3; 
 @keyframes shake { 0%,100% { transform: none } 20%,60% { transform: translateX(-6px) } 40%,80% { transform: translateX(6px) } }
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { scrollbar-width: none; }
+/* 提案資料からジャンプしたとき、該当箇所を一瞬光らせる */
+.jump-flash { animation: jumpflash 1.8s ease-out; border-radius: 1.5rem; }
+@keyframes jumpflash { 0%, 40% { box-shadow: 0 0 0 4px rgba(245,0,45,.55); } 100% { box-shadow: 0 0 0 4px rgba(245,0,45,0); } }

@@ -50,7 +50,7 @@ export default function CardView() {
         </span>
       </div>
 
-      <Card className="flex items-center gap-3">
+      <Card className="flex items-center gap-3" data-anchor="mynumber">
         <div className="w-11 h-11 rounded-2xl bg-emerald-50 text-emerald-500 flex items-center justify-center shrink-0">
           <ShieldCheck />
         </div>

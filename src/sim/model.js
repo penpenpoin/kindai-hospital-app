@@ -120,7 +120,7 @@ export const FAMILY_DEFAULT = [{ id: 'hanako', name: '田中 花子', rel: '娘'
 export const FAMILY_INVITE = { id: 'ken', name: '田中 健', rel: '息子', share: true, proxy: false }
 
 // 家族・日記はシナリオを戻しても消えないよう flags に入れる。research は匿名化データの研究利用への同意（任意）
-export const DEFAULT_FLAGS = { easy: false, gps: true, online: true, card: true, sound: true, avatar: '3d', who: 'maguro', family: FAMILY_DEFAULT, diary: DIARY_SEED, research: false, notifyAt: 2 }
+export const DEFAULT_FLAGS = { easy: false, gps: true, online: true, card: true, sound: true, avatar: '3d', who: 'maguro', family: FAMILY_DEFAULT, diary: DIARY_SEED, research: false, notifyAt: 2, osNotify: false }
 
 export function createInitial(flags = DEFAULT_FLAGS) {
   return {
@@ -143,6 +143,8 @@ export function createInitial(flags = DEFAULT_FLAGS) {
     wifi: false,
     mapTarget: null,
     familyFeed: [],
+    notices: [],
+    lastNotice: null,
     snsPosts: [],
     chat: [],
     alert: null, // { id, kind: 'leave', tasks: [...] }
@@ -195,6 +197,15 @@ function send(s, src, msg) {
 function toast(s, text, tone = 'info') {
   s.seq++
   s.toast = { id: s.seq, text, tone }
+}
+
+// 病院から届く「お知らせ」（ベルの一覧に残る・許可があれば端末の通知にも出す）。
+// シナリオ再生で過去の段階を作り直しているときは、端末への通知は出さない（fresh=false）
+function notice(s, text, { tone = 'info', view = null } = {}) {
+  s.seq++
+  const n = { id: s.seq, clock: s.clock, text, tone, view, fresh: !s.replaying }
+  s.notices.push(n)
+  if (n.fresh) s.lastNotice = n
 }
 
 function warn(s, msg) {
@@ -265,6 +276,7 @@ function apply(s, a) {
       send(s, SYS.rsv, '仮受付を登録：明日 9:30 循環器内科（夜間は仮受付 → 6:00 に本受付）')
       send(s, SYS.emr, '問診票の下書きを送信（医師が確認するまで確定しない）')
       toast(s, '仮受付しました。明日の朝6時に本受付になります')
+      notice(s, '仮受付しました。明日の朝6時に本受付になります（受付番号は朝にお知らせします）', { view: 'reception' })
       return
 
     case 'RECEPTION_CONFIRM':
@@ -278,6 +290,7 @@ function apply(s, a) {
       notifyFamily(s, '今日 9:30 循環器内科の受付が確定しました')
       log(s, SYS.push, '通知「受付が確定しました。受付番号 A-0123」')
       toast(s, '受付が確定しました（受付番号 A-0123）')
+      notice(s, '本受付が確定しました。受付番号 A-0123・9:30 循環器内科', { view: 'home' })
       return
 
     case 'GO_STATION':
@@ -298,6 +311,7 @@ function apply(s, a) {
         log(s, SYS.loc, 'ビーコン：1号館（外来棟）入口')
         doCheckin(s, '自動')
         toast(s, 'おはようございます。到着を受け付けました')
+        notice(s, '到着を受け付けました。まず 2号館 3F の採血（3L）へどうぞ', { view: 'nav' })
       } else {
         s.needManualCheckin = true
         warn(s, '位置情報なし → 自動チェックインできない。総合受付前の自動受付機にアプリの診察券をかざすよう案内')
@@ -338,6 +352,7 @@ function apply(s, a) {
       log(s, SYS.app, 'やること を更新：残り「循環器内科 診察」')
       if (s.checkedIn) s.queueAhead = 4
       toast(s, '採血おつかれさまでした。診察まで好きな場所で待てます')
+      notice(s, '採血が終わりました。診察まで好きな場所で待てます（呼ばれる前にお知らせします）', { view: 'queue' })
       return
     }
 
@@ -360,9 +375,15 @@ function apply(s, a) {
       if (ahead <= s.flags.notifyAt) {
         log(s, SYS.push, `通知「あと ${ahead} 人です。そろそろ ${PLACES.cardio} へ」（あと ${s.flags.notifyAt} 人で知らせる設定・移動時間を見込んで早めに）`)
         toast(s, `あと ${ahead} 人です。そろそろ戻りましょう（移動時間を見込んでお知らせしています）`, 'call')
+        notice(s, `診察まであと ${ahead} 人です。そろそろ 1号館 3F 循環器内科（3B）へお戻りください`, { tone: 'call', view: 'queue' })
       }
       return
     }
+
+    case 'OS_NOTIFY':
+      s.flags.osNotify = a.on
+      log(s, SYS.push, a.on ? '端末の通知を許可：お知らせを端末の通知にも出す（ブラウザの通知機能）' : '端末への通知をオフ', 'debug')
+      return
 
     case 'NOTIFY_AT':
       s.flags.notifyAt = a.n
@@ -380,6 +401,7 @@ function apply(s, a) {
       notifyFamily(s, '診察が始まります（循環器内科）')
       if (s.waitPlace && s.waitPlace !== 'waiting') log(s, SYS.app, `${PLACES[s.waitPlace]} → ${PLACES.cardio} のルートを表示`)
       toast(s, '診察の順番です。循環器内科（3B）診察室 3番 へお入りください', 'call')
+      notice(s, '診察の順番です。循環器内科（3B）診察室 3番 へお入りください', { tone: 'call', view: 'queue' })
       return
 
     case 'CONSULT_DONE': {
@@ -397,6 +419,7 @@ function apply(s, a) {
       send(s, SYS.pay, `会計金額が確定：${BILL.total.toLocaleString()} 円`)
       if (openTasks(s).length) warn(s, `まだ未完了：${openTasks(s).map((x) => x.name).join('・')}`)
       log(s, SYS.push, '通知「お会計の準備ができました」')
+      notice(s, `お会計の準備ができました（${BILL.total.toLocaleString()} 円）`, { view: 'pay' })
       return
     }
 
@@ -422,6 +445,7 @@ function apply(s, a) {
       send(s, SYS.pay, '領収書・明細の PDF を発行 → アプリに保存')
       notifyFamily(s, `お会計が済みました（${BILL.total.toLocaleString()} 円）`)
       toast(s, 'お支払いが完了しました。領収書はアプリに保存されています')
+      notice(s, 'お支払いが完了しました。領収書はアプリに保存されています', { view: 'receipts' })
       return
     }
 
@@ -436,6 +460,7 @@ function apply(s, a) {
         }
         s.seq++
         s.alert = { id: s.seq, kind: 'leave', tasks: open.map((x) => x.id) }
+        notice(s, `まだ ${open[0].name}が残っています！お帰りの前にご確認ください`, { tone: 'urgent', view: 'nav' })
         warn(s, `未完了「${open.map((x) => x.name).join('・')}」のまま出口へ → 帰宅防止アラート（画面＋音声）`)
         log(s, SYS.push, `通知「田中さん、まだ ${open[0].name} が残っています！」`)
         notifyFamily(s, `⚠ ${open[0].name}が残ったまま出口へ向かっています。電話で声をかけてください`, true)
@@ -448,6 +473,7 @@ function apply(s, a) {
       log(s, SYS.app, '表示を「帰宅」に切り替え：次回予約・領収書・帰りのバス')
       notifyFamily(s, '病院を出ました。お迎え・帰りのバスの時刻を確認できます')
       toast(s, 'おつかれさまでした。お大事に')
+      notice(s, 'おつかれさまでした。次回は 11月20日 9:30 です。お大事に', { view: 'home' })
       return
     }
 
@@ -463,6 +489,7 @@ function apply(s, a) {
       open.forEach((t) => (t.status = 'skipped'))
       send(s, SYS.rsv, `本日は「${open.map((x) => x.name).join('・')}」を受けずに帰る旨を担当部署へ連絡（再予約の候補を返信）`)
       toast(s, '病院に連絡しました。あとで再予約のご案内が届きます')
+      notice(s, `${open.map((x) => x.name).join('・')}の再予約のご案内：アプリから日時を選べます`, { view: 'reception' })
       return
     }
 
@@ -593,10 +620,12 @@ function goto(state, n) {
   const k = Math.max(0, Math.min(STEPS.length - 1, n))
   const s = createInitial(state.flags)
   for (let i = 0; i <= k; i++) {
+    s.replaying = i < k // 今回の段階より前は「作り直し」なので端末通知は出さない
     log(s, SYS.step, `▶ ${i + 1}. ${STEPS[i].label}`, 'step')
     if (i === k) s.toast = null // 再生で出たトーストは最後のステップのものだけ見せる
     STEPS[i].actions.forEach((a) => apply(s, a))
   }
+  s.replaying = false
   s.step = k
   s.view = STEPS[k].view
   return s
@@ -614,6 +643,19 @@ export function reducer(state, action) {
       return goto({ flags: state.flags }, 0)
     case 'SCENE':
       return goto(state, SCENE_FIRST_STEP[action.scene])
+    // 提案資料の項目から、その場面へ飛ぶ（段階・設定・画面・スクロール位置）
+    case 'JUMP': {
+      const j = action.jump
+      // ほかの項目で変えた設定を引きずらないよう、毎回ふつうの状態から（項目が指定したものだけ変える）
+      const base = { easy: false, card: true, gps: true, online: true }
+      const s = goto({ flags: { ...state.flags, ...base, ...(j.flags || {}) } }, j.step ?? state.step)
+      log(s, SYS.step, `📌 提案資料 ${action.slide}「${action.title}」へジャンプ`, 'step')
+      ;(j.actions || []).forEach((a) => apply(s, a))
+      s.view = j.view ?? s.view
+      // seq は再生で同じ値になりうるので、毎回かならず変わる値にする（同じ段階へ続けて飛んでもスクロールさせる）
+      s.anchor = j.anchor ? { id: j.anchor, seq: Date.now() + Math.random() } : null
+      return s
+    }
     default: {
       const s = structuredClone(state)
       apply(s, action)
