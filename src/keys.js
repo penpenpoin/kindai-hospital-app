@@ -9,6 +9,7 @@ export const KEYMAP = [
   { keys: ['D'], label: '診察を終える', action: { type: 'CONSULT_DONE' } },
   { keys: ['X'], label: '出口へ移動（未完了があれば帰宅防止アラート）', action: { type: 'LEAVE' } },
   { keys: ['P'], label: '診察券を表示', action: { type: 'VIEW', view: 'card' } },
+  { keys: ['V'], label: 'AI の案内役を切り替え（テキスト → 2D → 3D）', action: { type: 'AVATAR' } },
   { keys: ['G'], label: '位置情報 ON/OFF', action: { type: 'TOGGLE', flag: 'gps' } },
   { keys: ['O'], label: '通信 ON/OFF（オフライン）', action: { type: 'TOGGLE', flag: 'online' } },
   { keys: ['K'], label: 'カード登録 あり/なし', action: { type: 'TOGGLE', flag: 'card' } },

@@ -70,7 +70,7 @@ export const DIARY = [
 
 export const BILL = { total: 3240, items: [['再診料', 760], ['検査（採血）', 1680], ['処方箋料', 800]] }
 
-export const DEFAULT_FLAGS = { easy: false, gps: true, online: true, card: true, sound: true }
+export const DEFAULT_FLAGS = { easy: false, gps: true, online: true, card: true, sound: true, avatar: '3d', who: 'maguro' }
 
 export function createInitial(flags = DEFAULT_FLAGS) {
   return {
@@ -178,6 +178,23 @@ function apply(s, a) {
         s.pending = []
       }
       if (k === 'gps' && !s.flags.gps) warn(s, '位置情報なし：自動チェックイン・帰宅防止アラートは使えない → 診察券のバーコードで受付する方法に切り替える')
+      if (k === 'easy' && s.flags.easy && s.flags.avatar === '3d') {
+        s.flags.avatar = '2d'
+        log(s, SYS.app, 'やさしい表示では AI の案内役を 3D → 2D に切り替え（動きが少なく見やすい・古いスマホでも軽い）')
+      }
+      return
+    }
+
+    // AI 案内役の見た目：chat（テキスト）／2d／3d、キャラ：maguro／mammoth
+    case 'AVATAR': {
+      const order = s.flags.easy ? ['chat', '2d'] : ['chat', '2d', '3d']
+      let mode = a.mode ?? order[(order.indexOf(s.flags.avatar) + 1) % order.length]
+      if (mode === '3d' && s.flags.easy) mode = '2d'
+      s.flags.avatar = mode
+      if (a.who) s.flags.who = a.who
+      if (mode === '3d') s.flags.who = 'maguro'
+      const names = { chat: 'テキスト', '2d': '2D', '3d': '3D' }
+      log(s, SYS.debug, `AI の案内役を「${names[mode]}・${s.flags.who === 'maguro' ? '近大マグロ' : 'マンモス'}」に`, 'debug')
       return
     }
 

@@ -1,9 +1,12 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Mic } from 'lucide-react'
 import { useSim } from '../sim/context.js'
 import { PLACES, openTasks } from '../sim/model.js'
 import { Page } from '../components/ui.jsx'
 import { Bubble } from './ReceptionView.jsx'
+import { useSpeaker } from '../avatar/useSpeaker.js'
+import Avatar2D from '../avatar/Avatar2D.jsx'
+import Avatar3D from '../avatar/Avatar3D.jsx'
 
 const AVATARS = [
   { id: 'maguro', emoji: '🐟', name: '近大マグロ' },
@@ -32,69 +35,162 @@ export function faqs(s) {
   ]
 }
 
+const MODES = [
+  { id: 'chat', label: 'テキスト' },
+  { id: '2d', label: '2D' },
+  { id: '3d', label: '3D' },
+]
+
+// 同じ回答を2回読み上げないための目印（画面を開き直しても残す）
+let lastSpoken = 0
+
 export default function AIView() {
   const { s, d, t } = useSim()
-  const [avatar, setAvatar] = useState(AVATARS[0])
+  const easy = s.flags.easy
+  const mode = easy && s.flags.avatar === '3d' ? '2d' : s.flags.avatar
+  const who = mode === '3d' ? 'maguro' : s.flags.who
+  const char = AVATARS.find((a) => a.id === who)
   const [listening, setListening] = useState(false)
+  // やさしい表示では少しゆっくり話す
+  const { talking, talkingRef, speak, stop } = useSpeaker({ enabled: s.flags.sound, rate: easy ? 0.85 : 1.05 })
   const list = faqs(s)
+  const shown = easy ? list.slice(0, 4) : list
+  const lastAi = [...s.chat].reverse().find((m) => m.role === 'ai')
+  const lastUser = [...s.chat].reverse().find((m) => m.role === 'user')
+  const greeting = t(`こんにちは！${char.name}だよ。病院のこと、なんでも聞いてね。`, `${char.name}だよ。なんでも きいてね。`)
+
+  // 新しい回答が来たら読み上げる（ホームのサービスから質問して開いたときも）
+  useEffect(() => {
+    const n = s.chat.length
+    if (n < lastSpoken) lastSpoken = 0
+    if (n > lastSpoken && lastAi) {
+      lastSpoken = n
+      speak(lastAi.text)
+    }
+  }, [s.chat.length]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const ask = (f) => d({ type: 'ASK', q: f.q, answer: f.a })
   const talk = () => {
     if (listening) return
+    stop()
     setListening(true)
     setTimeout(() => {
       setListening(false)
       ask(list[0])
     }, 1300)
   }
+  const status = listening ? t('聞いています…', 'きいています') : talking ? t('話しています', 'はなしています') : t('待機中', 'まっています')
 
   return (
     <Page title={t('AIコンシェルジュ', 'そうだん')}>
-      <div className="flex gap-2">
-        {AVATARS.map((a) => (
+      {/* 見た目の切り替え（やさしい表示では 3D を使わない） */}
+      <div className="space-y-2">
+        <div className="grid grid-cols-3 gap-1 p-1 bg-slate-100 rounded-2xl">
+          {MODES.map((m) => {
+            const off = easy && m.id === '3d'
+            return (
+              <button
+                key={m.id}
+                disabled={off}
+                onClick={() => d({ type: 'AVATAR', mode: m.id })}
+                className={`py-2 rounded-xl text-sm font-bold transition-all ${mode === m.id ? 'bg-white text-brand-600 shadow-sm' : 'text-slate-500'} disabled:opacity-35`}
+              >
+                {m.label}
+              </button>
+            )
+          })}
+        </div>
+        <div className="flex gap-2">
+          {AVATARS.map((a) => {
+            const off = mode === '3d' && a.id !== 'maguro'
+            return (
+              <button
+                key={a.id}
+                disabled={off}
+                onClick={() => d({ type: 'AVATAR', mode, who: a.id })}
+                className={`flex-1 py-2 rounded-2xl border font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-35 ${who === a.id ? 'border-brand-400 bg-brand-50 text-brand-700' : 'border-slate-100 bg-white text-slate-500'}`}
+              >
+                <span className="text-xl">{a.emoji}</span> {a.name}
+              </button>
+            )
+          })}
+        </div>
+        {easy && <p className="text-xs text-slate-500 px-1">やさしい表示では、見やすい 2D で案内します。</p>}
+        {!easy && mode === '3d' && <p className="text-[11px] text-slate-400 px-1">3D は近大マグロのみです。</p>}
+      </div>
+
+      {mode === 'chat' ? (
+        <div className="space-y-3 min-h-[180px]">
+          <AvatarBubble emoji={char.emoji}>{greeting}</AvatarBubble>
+          {s.chat.map((m, i) =>
+            m.role === 'user' ? (
+              <Bubble key={i} role="user">
+                {m.text}
+              </Bubble>
+            ) : (
+              <AvatarBubble key={i} emoji={char.emoji}>
+                {m.text}
+              </AvatarBubble>
+            ),
+          )}
+          {listening && <Bubble role="user">…</Bubble>}
+        </div>
+      ) : (
+        <div className="rounded-3xl overflow-hidden bg-white border border-slate-100 shadow-xl shadow-slate-200/60">
+          <div className={`relative bg-gradient-to-b from-sky-100 via-sky-50 to-white ${easy ? 'h-72' : 'h-60'}`}>
+            {mode === '2d' ? (
+              <Avatar2D who={who} talkingRef={talkingRef} className="w-full h-full p-4" />
+            ) : (
+              <Avatar3D talkingRef={talkingRef} className="w-full h-full" />
+            )}
+            <div className="absolute top-3 left-3 flex items-center gap-2 bg-white/85 backdrop-blur rounded-full pl-2 pr-3 py-1 shadow-sm">
+              <span className={`w-2 h-2 rounded-full ${listening ? 'bg-rose-500 animate-pulse' : talking ? 'bg-emerald-500 animate-pulse' : 'bg-slate-300'}`} />
+              <span className="text-[11px] font-bold text-slate-700">
+                {char.name}・{status}
+              </span>
+            </div>
+            {talking && (
+              <button onClick={stop} className="absolute top-3 right-3 bg-white/85 backdrop-blur rounded-full px-3 py-1 text-[11px] font-bold text-slate-500 shadow-sm">
+                {t('とめる', 'とめる')}
+              </button>
+            )}
+          </div>
+          {/* 字幕：話した内容を文字でも */}
+          <div className="p-4 border-t border-slate-100 space-y-2">
+            {(lastUser || listening) && (
+              <p className={`${easy ? 'text-sm' : 'text-xs'} text-slate-400 font-bold`}>
+                {t('あなた', 'あなた')}：{listening ? '…' : lastUser.text}
+              </p>
+            )}
+            <p className={`${easy ? 'text-xl font-bold leading-relaxed' : 'text-sm leading-relaxed'} text-slate-800`}>{lastAi && !listening ? lastAi.text : greeting}</p>
+          </div>
+        </div>
+      )}
+
+      <div className={`flex flex-wrap gap-2 ${easy ? 'grid grid-cols-1' : ''}`}>
+        {shown.map((f) => (
           <button
-            key={a.id}
-            onClick={() => setAvatar(a)}
-            className={`flex-1 py-2 rounded-2xl border font-bold text-sm flex items-center justify-center gap-2 ${avatar.id === a.id ? 'border-brand-400 bg-brand-50 text-brand-700' : 'border-slate-100 bg-white text-slate-500'}`}
+            key={f.q}
+            onClick={() => ask(f)}
+            className={`rounded-full bg-white border border-brand-100 text-brand-600 font-bold shadow-sm active:scale-95 ${easy ? 'px-4 py-3 text-base text-left rounded-2xl' : 'px-3 py-2 text-xs'}`}
           >
-            <span className="text-xl">{a.emoji}</span> {a.name}
-          </button>
-        ))}
-      </div>
-
-      <div className="space-y-3 min-h-[180px]">
-        <AvatarBubble emoji={avatar.emoji}>{t(`こんにちは！${avatar.name}だよ。病院のこと、なんでも聞いてね。`, 'なんでも きいてね')}</AvatarBubble>
-        {s.chat.map((m, i) =>
-          m.role === 'user' ? (
-            <Bubble key={i} role="user">
-              {m.text}
-            </Bubble>
-          ) : (
-            <AvatarBubble key={i} emoji={avatar.emoji}>
-              {m.text}
-            </AvatarBubble>
-          ),
-        )}
-        {listening && <Bubble role="user">…</Bubble>}
-      </div>
-
-      <div className="flex flex-wrap gap-2">
-        {list.map((f) => (
-          <button key={f.q} onClick={() => ask(f)} className="px-3 py-2 rounded-full bg-white border border-brand-100 text-brand-600 text-xs font-bold shadow-sm active:scale-95">
             {f.q}
           </button>
         ))}
       </div>
 
       <div className="bg-white/80 backdrop-blur-md p-4 rounded-[2rem] shadow-2xl border border-brand-100 text-center">
-        <p className="text-xs text-brand-400 mb-3 font-bold tracking-widest">VOICE ASSISTANT</p>
+        {!easy && <p className="text-xs text-brand-400 mb-3 font-bold tracking-widest">VOICE ASSISTANT</p>}
         <button
           onClick={talk}
-          className={`w-full py-4 rounded-full font-bold flex items-center justify-center gap-2 transition-all ${listening ? 'bg-rose-500 text-white animate-pulse' : 'bg-brand-600 text-white shadow-lg shadow-brand-200'}`}
+          className={`w-full ${easy ? 'py-5 text-lg' : 'py-4'} rounded-full font-bold flex items-center justify-center gap-2 transition-all ${listening ? 'bg-rose-500 text-white animate-pulse' : 'bg-brand-600 text-white shadow-lg shadow-brand-200'}`}
         >
-          <Mic size={20} /> {listening ? '聞き取り中…' : t('押して話す', 'おして はなす')}
+          <Mic size={easy ? 24 : 20} /> {listening ? '聞き取り中…' : t('押して話す', 'おして はなす')}
         </button>
-        <p className="text-[11px] text-slate-400 mt-3">{t('話した内容は文字でも確認できます。案内デスク・電話の問い合わせを AI が24時間代わりに受けます。', 'もじでも みられます')}</p>
+        <p className="text-[11px] text-slate-400 mt-3">
+          {t('話した内容は文字でも確認できます。案内デスク・電話の問い合わせを AI が24時間代わりに受けます。', 'はなした ことは もじでも でます')}
+          {!s.flags.sound && t('（いまは音声オフ：口の動きと字幕だけ）', '')}
+        </p>
       </div>
     </Page>
   )
