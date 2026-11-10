@@ -4,7 +4,7 @@ export const KEYMAP = [
   { keys: ['→', '←'], label: 'シナリオを1ステップ進める／戻す' },
   { keys: ['A'], label: '病院に到着（位置を検知）', action: { type: 'ARRIVE' } },
   { keys: ['E'], label: '採血を完了にする', action: { type: 'EXAM_DONE' } },
-  { keys: ['N'], label: '順番を進める（あと2人の予告）', action: { type: 'QUEUE', ahead: 2 } },
+  { keys: ['N'], label: '順番を1人進める（設定した人数で予告通知）', action: { type: 'QUEUE', dec: 1 } },
   { keys: ['C'], label: '診察の呼び出し通知', action: { type: 'CALL' } },
   { keys: ['D'], label: '診察を終える', action: { type: 'CONSULT_DONE' } },
   { keys: ['X'], label: '出口へ移動（未完了があれば帰宅防止アラート）', action: { type: 'LEAVE' } },

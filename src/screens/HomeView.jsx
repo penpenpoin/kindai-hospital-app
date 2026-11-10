@@ -1,4 +1,4 @@
-import { IdCard, Footprints, Users, ChevronRight, TriangleExclamationPoint, Map, ClipboardList, CreditCard, Activity, Bus, Car, Wifi, WifiOff, Check, Mic, Coffee, FileText, MapPin, Sparkles, Pill, Receipt, Store, Siren } from 'lucide-react'
+import { MessagesSquare, IdCard, Footprints, Users, ChevronRight, TriangleExclamationPoint, Map, ClipboardList, CreditCard, Activity, Bus, Car, Wifi, WifiOff, Check, Mic, Coffee, FileText, MapPin, Sparkles, Pill, Receipt, Store, Siren } from 'lucide-react'
 import { useSim } from '../sim/context.js'
 import { PLACES, openTasks, BILL } from '../sim/model.js'
 import { Card, Sign, Btn, Demo } from '../components/ui.jsx'
@@ -46,13 +46,13 @@ function StatusCard() {
       )
     else if (s.called)
       inner = (
-        <Row icon={<Users size={20} />} label={t('診察の順番です', 'あなたの ばんです')} pulse>
+        <Row icon={<Users size={20} />} label={t('診察の順番です', 'あなたの ばんです')} pulse onClick={() => d({ type: 'VIEW', view: 'queue' })}>
           3B 循環器内科 <span className="text-2xl">3番</span>
         </Row>
       )
     else
       inner = (
-        <Row icon={<Users size={20} />} label={t('現在の待ち状況', 'まっている人')} onClick={() => d({ type: 'VIEW', view: 'nav' })}>
+        <Row icon={<Users size={20} />} label={t('現在の待ち状況（タップで詳しく）', 'まっている人')} onClick={() => d({ type: 'VIEW', view: 'queue' })}>
           あと <span className="text-2xl">{s.queueAhead}</span> 人
           {s.waitPlace && <span className="block text-[11px] font-normal text-brand-100">{PLACES[s.waitPlace]}で待機中・呼ばれたら通知</span>}
         </Row>
@@ -223,14 +223,14 @@ const ACTIONS = [
 
 // サービス一覧（小さなアイコンを並べる）。ask は AI に質問した状態で開く
 const SERVICES = [
+  { Icon: MessagesSquare, color: 'text-brand-600', label: ['みんなの広場', 'ひろば'], view: 'community', easyAlt: { Icon: Map, label: ['院内マップ', 'ちず'], view: 'map' } },
   { Icon: Activity, color: 'text-purple-500', label: ['体調日記', 'にっき'], view: 'records' },
-  { Icon: Sparkles, color: 'text-emerald-500', label: ['AI問診票', 'メモ'], view: 'records' },
-  { Icon: Pill, color: 'text-sky-500', label: ['お薬', 'くすり'], view: 'records' },
-  { Icon: Receipt, color: 'text-amber-500', label: ['領収書', 'りょうしゅう'], view: 'pay' },
-  { Icon: Wifi, color: 'text-blue-500', label: ['院内Wi-Fi', 'Wi-Fi'], action: { type: 'WIFI' } },
-  { Icon: Car, color: 'text-slate-500', label: ['駐車場', 'ちゅうしゃ'], ask: '駐車料金はいくら？' },
-  { Icon: Store, color: 'text-orange-500', label: ['カフェ・売店', 'おみせ'], ask: 'コンビニはある？' },
-  { Icon: Siren, color: 'text-rose-500', label: ['救急外来', 'きゅうきゅう'], ask: '救急外来はどこ？' },
+  { Icon: Pill, color: 'text-sky-500', label: ['お薬', 'くすり'], view: 'meds' },
+  { Icon: Receipt, color: 'text-amber-500', label: ['領収書', 'りょうしゅう'], view: 'receipts' },
+  { Icon: Users, color: 'text-emerald-500', label: ['家族連携', 'かぞく'], view: 'account' },
+  { Icon: Car, color: 'text-slate-500', label: ['駐車場', 'ちゅうしゃ'], view: 'parking' },
+  { Icon: Store, color: 'text-orange-500', label: ['カフェ・売店', 'おみせ'], view: 'shops' },
+  { Icon: Siren, color: 'text-rose-500', label: ['救急外来', 'きゅうきゅう'], view: 'er' },
 ]
 
 function HeroCard() {
@@ -282,14 +282,17 @@ function Services() {
     <div className="bg-white rounded-3xl p-4 shadow-sm border border-slate-100">
       <p className="text-xs font-bold text-slate-500 mb-3">{t('サービス', 'べんりな きのう')}</p>
       <div className="grid grid-cols-4 gap-y-4">
-        {SERVICES.map((x) => (
+        {SERVICES.map((x0) => {
+          const x = s.flags.easy && x0.easyAlt ? { ...x0, ...x0.easyAlt } : x0
+          return (
           <button key={x.label[0]} onClick={() => tap(x)} className="flex flex-col items-center gap-1.5 active:scale-95 transition-all">
             <div className={`w-11 h-11 rounded-2xl bg-slate-50 flex items-center justify-center ${x.color}`}>
               {x.Icon === Wifi && s.wifi ? <Check size={20} className="text-emerald-500" /> : <x.Icon size={22} />}
             </div>
             <span className="text-[10.5px] font-bold text-slate-600 whitespace-nowrap">{t(...x.label)}</span>
           </button>
-        ))}
+          )
+        })}
       </div>
     </div>
   )

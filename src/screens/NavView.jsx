@@ -1,7 +1,9 @@
 import { ArrowUp, ArrowUpRight, ArrowLeft as ArrowL, Coffee, Armchair, Sofa, Check, MapPin } from 'lucide-react'
 import { useSim } from '../sim/context.js'
 import { PLACES, SIGNS, openTasks } from '../sim/model.js'
-import { Page, Card, Sign, Pill, Demo } from '../components/ui.jsx'
+import { Page, Card, Sign, Pill, Demo, Btn } from '../components/ui.jsx'
+import FloorMap from '../components/FloorMap.jsx'
+import { nodeForLocation } from '../sim/map.js'
 
 const ROUTES = {
   lab: {
@@ -34,6 +36,9 @@ const ROUTES = {
     ],
   },
 }
+
+// 案内の行き先 → 地図上の地点
+const MAP_DEST = { lab: 'lab', cardio: 'cardio', cashier: 'front', exit: 'deck' }
 
 // 院内の案内板（駅・空港型）をそのまま画面に再現 → 看板とアプリが同じ記号でつながる
 function Signboard({ dest }) {
@@ -114,7 +119,7 @@ export default function NavView() {
   const route = dest && ROUTES[dest]
 
   return (
-    <Page title={t('院内案内', 'あんない')} badge={<Pill>📍 {PLACES[s.location]}</Pill>}>
+    <Page title={t('院内案内', 'あんない')} badge={<span className="max-w-[45%] truncate text-xs font-bold text-blue-600 bg-blue-100 px-3 py-1 rounded-full">📍 {PLACES[s.location]}</span>}>
       {(s.scene === 'before' || s.scene === 'travel' || s.scene === 'home') && (
         <Card className="text-center py-8">
           <MapPin className="mx-auto text-brand-400 mb-3" size={36} />
@@ -125,24 +130,15 @@ export default function NavView() {
 
       {route && (
         <Card>
-          <div className="relative rounded-2xl overflow-hidden bg-gradient-to-b from-slate-100 to-slate-50 mb-4 py-6 flex flex-col items-center justify-center">
-            {arrived ? (
-              <>
-                <div className="w-16 h-16 rounded-full bg-emerald-500 text-white flex items-center justify-center mb-2">
-                  <Check size={36} />
-                </div>
-                <p className="font-bold text-lg text-slate-700">{t('到着しました', 'つきました')}</p>
-              </>
-            ) : (
-              <>
-                <route.arrow className="w-16 h-16 text-brand-600 mb-2 animate-bounce" />
-                <p className="font-bold text-lg text-slate-700 px-4 text-center">{t(...route.head)}</p>
-              </>
-            )}
-            <div className="mt-3">
-              <Sign id={dest} size="lg" />
+          <div className="flex items-center gap-3 mb-3">
+            <Sign id={dest} />
+            <div className="min-w-0">
+              <p className="text-[10px] font-black text-brand-600 tracking-widest">{arrived ? t('到着しました', 'つきました') : t('行き先', 'いきさき')}</p>
+              <p className="font-bold text-slate-800 leading-snug">{arrived ? <span className="flex items-center gap-1"><Check size={18} className="text-emerald-500" />{t(...route.head)}</span> : t(...route.head)}</p>
             </div>
           </div>
+          {/* 地図の上でルート案内（現在地 → 行き先） */}
+          <FloorMap from={nodeForLocation(s.location)} to={MAP_DEST[dest]} className="mb-4" />
           <div className="space-y-2">
             {route.steps.map(([name, sub], i) => (
               <div key={name} className={`flex items-center gap-4 p-3 rounded-2xl ${i === 0 && !arrived ? 'bg-slate-50' : 'opacity-50'}`}>
@@ -161,10 +157,14 @@ export default function NavView() {
 
       {s.scene === 'hospital' && !s.called && open[0]?.id === 'consult' && <WaitChooser />}
 
+      <Btn tone="ghost" onClick={() => d({ type: 'VIEW', view: 'map' })}>
+        <MapPin size={18} /> {t('院内マップで行き先をさがす', 'ちずで さがす')}
+      </Btn>
+
       <div className="space-y-2">
         {dest === 'lab' && !arrived && <Demo onClick={() => d({ type: 'GO', place: 'lab' })}>3L（採血）に着く</Demo>}
         {dest === 'lab' && <Demo onClick={() => d({ type: 'EXAM_DONE' })}>採血が終わる（E）</Demo>}
-        {s.scene === 'hospital' && !s.called && open[0]?.id === 'consult' && <Demo onClick={() => d({ type: 'QUEUE', ahead: 2 })}>順番が進む（N）</Demo>}
+        {s.scene === 'hospital' && !s.called && open[0]?.id === 'consult' && <Demo onClick={() => d({ type: 'QUEUE', dec: 1 })}>順番が1人進む（N）</Demo>}
         {s.called && <Demo onClick={() => d({ type: 'CONSULT_DONE' })}>診察が終わる（D）</Demo>}
         {dest === 'exit' && <Demo onClick={() => d({ type: 'LEAVE' })}>出口から帰る（X）</Demo>}
       </div>

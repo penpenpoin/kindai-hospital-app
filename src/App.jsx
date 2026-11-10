@@ -15,8 +15,13 @@ import PayView from './screens/PayView.jsx'
 import RecordsView from './screens/RecordsView.jsx'
 import AIView from './screens/AIView.jsx'
 import CardView from './screens/CardView.jsx'
+import MapView from './screens/MapView.jsx'
+import AccountView from './screens/AccountView.jsx'
+import CommunityView from './screens/CommunityView.jsx'
+import QueueView from './screens/QueueView.jsx'
+import { ErView, ParkingView, ShopsView, MedsView, ReceiptsView } from './screens/InfoViews.jsx'
 
-const VIEWS = { home: HomeView, nav: NavView, reception: ReceptionView, pay: PayView, records: RecordsView, ai: AIView, card: CardView }
+const VIEWS = { home: HomeView, nav: NavView, reception: ReceptionView, pay: PayView, records: RecordsView, ai: AIView, card: CardView, map: MapView, account: AccountView, community: CommunityView, queue: QueueView, er: ErView, parking: ParkingView, shops: ShopsView, meds: MedsView, receipts: ReceiptsView }
 
 function speak(text) {
   try {
@@ -117,7 +122,11 @@ export default function App() {
                 <Bell size={20} />
                 {s.toast && <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full" />}
               </button>
-              <button className="p-2 text-slate-400 hover:text-brand-600">
+              <button
+                onClick={() => d({ type: 'VIEW', view: 'account' })}
+                className={`p-2 hover:text-brand-600 ${s.view === 'account' ? 'text-brand-600' : 'text-slate-400'}`}
+                aria-label="アカウント・家族連携"
+              >
                 <User size={20} />
               </button>
             </div>

@@ -14,6 +14,7 @@ const SRC_COLOR = {
   [SYS.ai]: '#86efac',
   [SYS.transit]: '#7dd3fc',
   [SYS.debug]: '#94a3b8',
+  [SYS.family]: '#fda4af',
 }
 
 const FLAGS = [

@@ -25,6 +25,7 @@ export const SYS = {
   ai: 'AI（想定）',
   transit: '交通情報（想定）',
   debug: 'デバッグ',
+  family: '家族連携',
 }
 
 export const PLACES = {
@@ -54,27 +55,76 @@ const initialTasks = () => [
   { id: 'consult', name: '循環器内科 診察', easy: 'お医者さんの診察', place: 'cardio', status: 'todo' },
 ]
 
-export const MONSHIN = {
-  chief: '右ひざの痛み（階段を下りるときに強い）',
-  course: '10/2 ごろから約1か月。湿布で一時的に軽快。10/6 夜間痛で目が覚めた。',
-  related: '腫れ（10/4）、睡眠障害（10/6）',
-  severity: 'つらさ 2〜4 / 5',
-  sources: 3,
+// ---------------------------------------------------------------------
+// 体調日記（提案書：日々の状態をアプリで記録 → AI が問診票を自動生成・医療データの利活用）
+//  入力はタップで選ぶだけ。ひとことは声でも入れられる（吹き込んだ体調メモ）。
+// ---------------------------------------------------------------------
+export const DIARY_PARTS = ['頭', 'むね', 'おなか', '背中・腰', 'ひざ・足', 'その他']
+export const DIARY_SYMPTOMS = ['痛い', '腫れている', 'しびれる', '息が切れる', 'めまい', '眠れない']
+export const DIARY_MOODS = ['よい', 'ふつう', 'わるい']
+const SYM_NOUN = { 痛い: '痛み', 腫れている: '腫れ', しびれる: 'しびれ', 息が切れる: '息切れ', めまい: 'めまい', 眠れない: '睡眠障害（眠れない）' }
+
+export const DIARY_SEED = [
+  { id: 1, date: '10月2日', mood: 'わるい', parts: ['ひざ・足'], sym: ['痛い'], level: 3, note: '階段をおりるときがつらい', voice: false },
+  { id: 2, date: '10月4日', mood: 'ふつう', parts: ['ひざ・足'], sym: ['腫れている'], level: 2, note: '湿布で楽になった', voice: false },
+  { id: 3, date: '10月6日', mood: 'わるい', parts: ['ひざ・足'], sym: ['痛い', '眠れない'], level: 4, note: '夜に目が覚めた', voice: true },
+]
+
+// 問診票に添える既往（デモ用の例）
+export const ALLERGIES = ['ペニシリン系抗菌薬：発疹の既往', 'そば：じんましん']
+
+const top = (arr) => {
+  const c = {}
+  arr.forEach((x) => (c[x] = (c[x] || 0) + 1))
+  return Object.entries(c).sort((a, b) => b[1] - a[1]).map(([k]) => k)
 }
 
-export const DIARY = [
-  { date: '10月2日', part: 'ひざ・足', mood: 'わるい', tags: ['痛い'], note: '階段をおりるときがつらい', level: 3 },
-  { date: '10月4日', part: 'ひざ・足', mood: 'ふつう', tags: ['腫れている'], note: '湿布で楽になった', level: 2 },
-  { date: '10月6日', part: 'ひざ・足', mood: 'わるい', tags: ['痛い', '眠れない'], note: '夜に目が覚めた', level: 4 },
-]
+// 日記の記録から、医師が読みやすい形（主訴・経過・随伴症状）にまとめる。
+// まとめるだけで、診断や受診科の判断はしない。
+export function buildMonshin(diary, talk = null) {
+  const list = diary.filter((r) => r.parts.length || r.sym.length || r.note)
+  if (!list.length) return null
+  const parts = top(list.flatMap((r) => r.parts))
+  const syms = top(list.flatMap((r) => r.sym))
+  const mainSym = syms[0]
+  const mainPart = parts[0]
+  const withMain = list.find((r) => r.sym.includes(mainSym) && r.note)
+  const chief = `${mainPart ?? ''}${mainPart && mainSym ? 'の' : ''}${mainSym ? SYM_NOUN[mainSym] : ''}${withMain ? `（${withMain.note}）` : ''}` || '体調の変化'
+  const levels = list.map((r) => r.level).filter(Boolean)
+  const first = list[0]
+  const last = list[list.length - 1]
+  let trend = ''
+  if (levels.length >= 2) trend = levels[levels.length - 1] > levels[0] ? '悪化傾向' : levels[levels.length - 1] < levels[0] ? '改善傾向' : '横ばい'
+  const notes = list.filter((r) => r.note && r !== withMain).map((r) => `${r.date}「${r.note}」`)
+  const course = [`${first.date}ごろから。記録 ${list.length} 件${trend ? `、つらさは${trend}` : ''}。`, ...notes].join(' ')
+  const related = syms.slice(1).map((x) => `${SYM_NOUN[x]}（${list.filter((r) => r.sym.includes(x)).map((r) => r.date).join('・')}）`).join('、') || 'なし'
+  const severity = levels.length ? `つらさ ${Math.min(...levels)}〜${Math.max(...levels)} / 5（最新 ${last.level || '—'}）` : '—'
+  return {
+    chief,
+    course: talk ? `${course} 前日の会話「${talk}」。` : course,
+    related,
+    severity,
+    otherParts: parts.slice(1).join('・') || null,
+    allergies: ALLERGIES,
+    sources: list.length,
+    voiceCount: list.filter((r) => r.voice).length + (talk ? 1 : 0),
+    status: 'draft',
+    sent: false,
+  }
+}
 
 export const BILL = { total: 3240, items: [['再診料', 760], ['検査（採血）', 1680], ['処方箋料', 800]] }
 
-export const DEFAULT_FLAGS = { easy: false, gps: true, online: true, card: true, sound: true, avatar: '3d', who: 'maguro' }
+// 家族連携（アカウント画面で設定）。シナリオを戻しても消えないよう flags に入れる
+export const FAMILY_DEFAULT = [{ id: 'hanako', name: '田中 花子', rel: '娘', share: true, proxy: true }]
+export const FAMILY_INVITE = { id: 'ken', name: '田中 健', rel: '息子', share: true, proxy: false }
+
+// 家族・日記はシナリオを戻しても消えないよう flags に入れる。research は匿名化データの研究利用への同意（任意）
+export const DEFAULT_FLAGS = { easy: false, gps: true, online: true, card: true, sound: true, avatar: '3d', who: 'maguro', family: FAMILY_DEFAULT, diary: DIARY_SEED, research: false, notifyAt: 2 }
 
 export function createInitial(flags = DEFAULT_FLAGS) {
   return {
-    flags: { ...flags },
+    flags: structuredClone(flags),
     step: 0,
     scene: 'before',
     clock: '前日 21:30',
@@ -91,7 +141,9 @@ export function createInitial(flags = DEFAULT_FLAGS) {
     paid: false,
     payMethod: null,
     wifi: false,
-    diaryToday: null,
+    mapTarget: null,
+    familyFeed: [],
+    snsPosts: [],
     chat: [],
     alert: null, // { id, kind: 'leave', tasks: [...] }
     toast: null, // { id, text, tone }
@@ -159,6 +211,12 @@ function apply(s, a) {
     case 'VIEW':
       s.view = a.view
       if (a.view === 'card') log(s, SYS.app, '診察券（バーコード）を表示：端末に保存済みなので通信なしでも出せる・画面の明るさを最大に')
+      if (a.target !== undefined) s.mapTarget = a.target
+      return
+
+    case 'MAP_TARGET':
+      s.mapTarget = a.id
+      log(s, SYS.app, `院内マップ：現在地 → ${a.name} のルートを表示（模式図）`)
       return
 
     case 'TOGGLE': {
@@ -201,8 +259,8 @@ function apply(s, a) {
     case 'RECEPTION_PROVISIONAL':
       if (s.reception) return
       log(s, SYS.ai, '音声「明日の受付をしておくね。気になる症状はある？」→「ひざが痛い」を聞き取り')
-      log(s, SYS.ai, `体調日記 ${MONSHIN.sources} 件＋会話 → 問診票の下書きを生成（主訴・経過・随伴症状）`)
-      s.monshin = { ...MONSHIN, status: 'draft' }
+      s.monshin = buildMonshin(s.flags.diary, 'ひざが痛くて、夜に目が覚めることがある')
+      log(s, SYS.ai, `体調日記 ${s.monshin?.sources ?? 0} 件＋会話 → 問診票の下書きを生成（主訴・経過・随伴症状）`)
       s.reception = { status: 'provisional', no: '仮-0412' }
       send(s, SYS.rsv, '仮受付を登録：明日 9:30 循環器内科（夜間は仮受付 → 6:00 に本受付）')
       send(s, SYS.emr, '問診票の下書きを送信（医師が確認するまで確定しない）')
@@ -217,6 +275,7 @@ function apply(s, a) {
       }
       s.reception = { status: 'confirmed', no: 'A-0123' }
       send(s, SYS.rsv, '本受付に確定：受付番号 A-0123')
+      notifyFamily(s, '今日 9:30 循環器内科の受付が確定しました')
       log(s, SYS.push, '通知「受付が確定しました。受付番号 A-0123」')
       toast(s, '受付が確定しました（受付番号 A-0123）')
       return
@@ -290,15 +349,24 @@ function apply(s, a) {
       if (a.place === 'cafe') log(s, SYS.app, 'CAFE CORE の混み具合と、アプリ利用者クーポン（提案）を表示')
       return
 
-    case 'QUEUE':
+    case 'QUEUE': {
       if (!s.checkedIn) return warn(s, 'まだ到着していないので順番がない')
-      s.queueAhead = a.ahead
-      s.clock = '当日 9:50'
-      send(s, SYS.rsv, `順番の更新を受信：あと ${a.ahead} 人`)
-      if (a.ahead <= 2) {
-        log(s, SYS.push, `通知「あと ${a.ahead} 人です。そろそろ ${PLACES.cardio} へ」（移動時間を見込んで早めに予告）`)
-        toast(s, `あと ${a.ahead} 人です。そろそろ戻りましょう（移動時間を見込んでお知らせしています）`, 'call')
+      if (s.called) return warn(s, 'すでに呼ばれています')
+      // ahead：その人数にする／dec：1人進める（N キー）
+      const ahead = a.dec ? Math.max(1, (s.queueAhead ?? 5) - a.dec) : a.ahead
+      s.queueAhead = ahead
+      s.clock = a.dec ? s.clock : '当日 9:50'
+      send(s, SYS.rsv, `順番の更新を受信：あと ${ahead} 人`)
+      if (ahead <= s.flags.notifyAt) {
+        log(s, SYS.push, `通知「あと ${ahead} 人です。そろそろ ${PLACES.cardio} へ」（あと ${s.flags.notifyAt} 人で知らせる設定・移動時間を見込んで早めに）`)
+        toast(s, `あと ${ahead} 人です。そろそろ戻りましょう（移動時間を見込んでお知らせしています）`, 'call')
       }
+      return
+    }
+
+    case 'NOTIFY_AT':
+      s.flags.notifyAt = a.n
+      log(s, SYS.app, `呼び出しの予告を「あと ${a.n} 人」に設定`)
       return
 
     case 'CALL':
@@ -309,6 +377,7 @@ function apply(s, a) {
       s.called = true
       send(s, SYS.rsv, '呼び出しを受信：診察室 3 番')
       log(s, SYS.push, '通知「田中さん、診察の順番です。循環器内科（3B）診察室 3番 へ」＋バイブ')
+      notifyFamily(s, '診察が始まります（循環器内科）')
       if (s.waitPlace && s.waitPlace !== 'waiting') log(s, SYS.app, `${PLACES[s.waitPlace]} → ${PLACES.cardio} のルートを表示`)
       toast(s, '診察の順番です。循環器内科（3B）診察室 3番 へお入りください', 'call')
       return
@@ -324,6 +393,7 @@ function apply(s, a) {
       s.queueAhead = null
       if (s.monshin) s.monshin.status = 'confirmed'
       send(s, SYS.emr, '診察終了。問診票を医師が確認済みに')
+      notifyFamily(s, '診察が終わりました。次はお会計です')
       send(s, SYS.pay, `会計金額が確定：${BILL.total.toLocaleString()} 円`)
       if (openTasks(s).length) warn(s, `まだ未完了：${openTasks(s).map((x) => x.name).join('・')}`)
       log(s, SYS.push, '通知「お会計の準備ができました」')
@@ -350,6 +420,7 @@ function apply(s, a) {
       }
       s.paid = true
       send(s, SYS.pay, '領収書・明細の PDF を発行 → アプリに保存')
+      notifyFamily(s, `お会計が済みました（${BILL.total.toLocaleString()} 円）`)
       toast(s, 'お支払いが完了しました。領収書はアプリに保存されています')
       return
     }
@@ -367,6 +438,7 @@ function apply(s, a) {
         s.alert = { id: s.seq, kind: 'leave', tasks: open.map((x) => x.id) }
         warn(s, `未完了「${open.map((x) => x.name).join('・')}」のまま出口へ → 帰宅防止アラート（画面＋音声）`)
         log(s, SYS.push, `通知「田中さん、まだ ${open[0].name} が残っています！」`)
+        notifyFamily(s, `⚠ ${open[0].name}が残ったまま出口へ向かっています。電話で声をかけてください`, true)
         return
       }
       s.scene = 'home'
@@ -374,6 +446,7 @@ function apply(s, a) {
       if (!s.paid) log(s, SYS.app, '会計は後日カードで引き落とし（またはアプリで支払い）')
       send(s, SYS.transit, '病院 → 泉ケ丘駅：徒歩約6分／バスの発車時刻を取得')
       log(s, SYS.app, '表示を「帰宅」に切り替え：次回予約・領収書・帰りのバス')
+      notifyFamily(s, '病院を出ました。お迎え・帰りのバスの時刻を確認できます')
       toast(s, 'おつかれさまでした。お大事に')
       return
     }
@@ -393,24 +466,86 @@ function apply(s, a) {
       return
     }
 
+    case 'PARKING':
+      send(s, SYS.rsv, '駐車券の番号を受付に登録 → 外来患者の割引を自動で適用（提案）')
+      toast(s, '駐車券の割引を登録しました')
+      return
+
+    case 'MED_TAKEN':
+      log(s, SYS.app, `服薬を記録：${a.what}（飲み忘れが続くと次回の問診票に反映・提案）`)
+      return
+
+    case 'FAMILY_ADD':
+      if (s.flags.family.some((f) => f.id === FAMILY_INVITE.id)) return
+      s.flags.family.push({ ...FAMILY_INVITE })
+      send(s, SYS.app, `招待コードで ${FAMILY_INVITE.name}さん（${FAMILY_INVITE.rel}）と連携（本人の同意を確認済み）`)
+      toast(s, `${FAMILY_INVITE.name}さんと連携しました`)
+      return
+
+    case 'FAMILY_SET': {
+      const f = s.flags.family.find((x) => x.id === a.id)
+      if (!f) return
+      f[a.key] = !f[a.key]
+      const label = { share: '通知の共有', proxy: '代わりに受付・支払い' }[a.key]
+      log(s, SYS.family, `${f.name}さん：${label}を ${f[a.key] ? 'ON' : 'OFF'}`, 'debug')
+      return
+    }
+
+    case 'FAMILY_REMOVE':
+      s.flags.family = s.flags.family.filter((x) => x.id !== a.id)
+      log(s, SYS.family, '家族との連携を解除', 'debug')
+      return
+
     case 'WIFI':
-      if (s.wifi) return
+      if (s.wifi) {
+        s.wifi = false
+        log(s, SYS.app, '院内Wi-Fi の自動接続をオフ', 'debug')
+        return
+      }
       s.wifi = true
       log(s, SYS.app, '院内 Free Wi-Fi の設定プロファイルを適用（パスワード入力なし）')
       toast(s, '院内Wi-Fiにつながりました')
       return
 
-    case 'DIARY':
-      s.diaryToday = a.mood
-      send(s, SYS.app, `体調日記を保存：今日は「${a.mood}」（問診票づくりに使う）`)
+    case 'DIARY_ADD': {
+      const e = { ...a.entry, id: Date.now(), date: '今日' }
+      s.flags.diary = [...s.flags.diary.filter((r) => r.date !== '今日'), e]
+      const desc = [e.mood, ...e.parts, ...e.sym, e.level ? `つらさ${e.level}` : ''].filter(Boolean).join('・')
+      send(s, SYS.app, `体調日記を保存：${desc}${e.note ? `「${e.note}」` : ''}${e.voice ? '（声で入力）' : ''}`)
+      if (s.flags.research) log(s, SYS.app, '研究利用に同意済み → 氏名などを除いて匿名化したデータを研究用に登録（提案）')
+      if (s.monshin && s.monshin.status === 'draft') {
+        s.monshin = { ...buildMonshin(s.flags.diary), sent: false }
+        log(s, SYS.ai, '新しい記録を問診票の下書きに反映')
+      }
       toast(s, '今日の記録をつけました')
+      return
+    }
+
+    case 'DIARY_VOICE':
+      log(s, SYS.ai, `音声メモを文字に変換：「${a.text}」（端末内で変換する想定）`)
       return
 
     case 'MAKE_MONSHIN':
-      if (!s.monshin) {
-        log(s, SYS.ai, `体調日記 ${MONSHIN.sources} 件 → 受診メモ（問診票の下書き）を生成`)
-        s.monshin = { ...MONSHIN, status: 'draft' }
-      }
+      s.monshin = buildMonshin(s.flags.diary)
+      if (s.monshin) log(s, SYS.ai, `体調日記 ${s.monshin.sources} 件 → 問診票の下書きを生成（主訴・経過・随伴症状。診断はしない）`)
+      return
+
+    case 'MONSHIN_SEND':
+      if (!s.monshin) return
+      s.monshin.sent = true
+      send(s, SYS.emr, '問診票の下書きを担当医へ共有（電子カルテの問診欄に取り込み、医師が確認して確定）')
+      toast(s, '問診票を医師に渡しました。診察前ならまだ直せます')
+      return
+
+    case 'SNS_POST':
+      s.seq++
+      s.snsPosts.unshift({ id: `p${s.seq}`, name: 'あなた（ニックネーム）', topic: a.topic, time: 'いま', text: a.text, r: { help: 0, me: 0, like: 0 } })
+      log(s, SYS.ai, '院内SNS：投稿を確認（名前・電話番号などの個人情報、誤った医療情報がないか）→ 問題なしで公開')
+      return
+
+    case 'RESEARCH':
+      s.flags.research = !s.flags.research
+      log(s, SYS.debug, `医療データの研究利用（匿名化）への同意を ${s.flags.research ? 'ON' : 'OFF'}`, 'debug')
       return
 
     case 'ASK': {
@@ -435,12 +570,22 @@ function apply(s, a) {
   }
 }
 
+// 家族連携：通知を共有している家族へ送る（家族のスマホにプッシュ通知する想定）
+function notifyFamily(s, msg, urgent = false) {
+  const to = (s.flags.family || []).filter((f) => f.share)
+  if (!to.length) return
+  s.seq++
+  s.familyFeed.push({ id: s.seq, clock: s.clock, msg, urgent })
+  send(s, SYS.family, `${to.map((f) => `${f.name.split(' ')[1]}さん（${f.rel}）`).join('・')}へ通知「${msg}」`)
+}
+
 function doCheckin(s, how) {
   s.checkedIn = true
   s.needManualCheckin = false
   s.queueAhead = 5
   send(s, SYS.rsv, `到着を登録（${how}・診察券スキャン不要）：受付番号 ${s.reception?.no ?? '当日受付'}`)
   log(s, SYS.app, `やること：${openTasks(s).map((t) => t.name).join(' → ')}（検査が先）`)
+  notifyFamily(s, '病院に着きました（受付済み）')
 }
 
 // ---------------------------------------------------------------------

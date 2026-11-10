@@ -20,7 +20,7 @@ export function Bubble({ role, children }) {
 
 // AI が日記と会話から作る問診票の下書き（医師が確認して確定）
 export function MonshinCard() {
-  const { s, t } = useSim()
+  const { s, d, t } = useSim()
   const m = s.monshin
   if (!m) return null
   const rows = [
@@ -28,14 +28,16 @@ export function MonshinCard() {
     ['経過', m.course],
     ['随伴症状', m.related],
     ['つらさ', m.severity],
+    ...(m.otherParts ? [['ほかの部位', m.otherParts]] : []),
+    ['アレルギー', (m.allergies || []).join('／')],
   ]
   return (
     <Card className="border-emerald-100">
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between mb-3 gap-2">
         <p className="font-bold text-slate-800 flex items-center gap-2">
           <Sparkles size={18} className="text-emerald-500" /> {t('AI問診票', 'おいしゃさんへの メモ')}
         </p>
-        {m.status === 'confirmed' ? <Pill tone="green">医師確認済み</Pill> : <Pill tone="amber">下書き・医師の確認待ち</Pill>}
+        {m.status === 'confirmed' ? <Pill tone="green">医師確認済み</Pill> : m.sent ? <Pill tone="blue">医師に共有済み</Pill> : <Pill tone="amber">下書き</Pill>}
       </div>
       <dl className="space-y-2 text-sm">
         {rows.map(([k, v]) => (
@@ -45,7 +47,14 @@ export function MonshinCard() {
           </div>
         ))}
       </dl>
-      <p className="text-[11px] text-slate-400 mt-3 pt-3 border-t border-slate-100">根拠：体調日記 {m.sources} 件＋音声での会話。AI は下書きまで、診断はしません。</p>
+      <p className="text-[11px] text-slate-400 mt-3 pt-3 border-t border-slate-100">
+        根拠：体調日記 {m.sources} 件{m.voiceCount ? `（うち声のメモ ${m.voiceCount} 件）` : ''}。記録をまとめただけで、診断や受診科の判断は医師が行います。診察前ならいつでも直せます。
+      </p>
+      {m.status !== 'confirmed' && !m.sent && (
+        <Btn className="mt-3" onClick={() => d({ type: 'MONSHIN_SEND' })}>
+          {t('この問診票を医師に渡す', 'おいしゃさんに わたす')}
+        </Btn>
+      )}
     </Card>
   )
 }
