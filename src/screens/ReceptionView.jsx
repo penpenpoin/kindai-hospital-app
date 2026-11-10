@@ -105,6 +105,7 @@ export default function ReceptionView() {
         <div className="bg-white/80 backdrop-blur-md p-4 rounded-[2rem] shadow-2xl border border-brand-100 text-center">
           <p className="text-xs text-brand-400 mb-3 font-bold tracking-widest">{t('話すだけで受付できます', 'ボタンを おして はなしてね')}</p>
           <button
+            data-tour="talk"
             onClick={talk}
             className={`w-full py-4 rounded-full font-bold flex items-center justify-center gap-2 transition-all ${listening ? 'bg-rose-500 text-white animate-pulse' : 'bg-brand-600 text-white shadow-lg shadow-brand-200'}`}
           >

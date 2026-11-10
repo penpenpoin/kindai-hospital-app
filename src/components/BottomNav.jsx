@@ -5,7 +5,7 @@ function Item({ id, Icon, emoji, label }) {
   const { s, d } = useSim()
   const on = s.view === id
   return (
-    <button className={`flex flex-col items-center gap-1 flex-1 transition-all ${on ? 'text-brand-600 font-bold' : 'text-slate-400'}`} onClick={() => d({ type: 'VIEW', view: id })}>
+    <button data-tour={`nav-${id}`} className={`flex flex-col items-center gap-1 flex-1 transition-all ${on ? 'text-brand-600 font-bold' : 'text-slate-400'}`} onClick={() => d({ type: 'VIEW', view: id })}>
       {emoji ? <span className={`text-xl leading-5 ${on ? '' : 'grayscale opacity-60'}`}>{emoji}</span> : <Icon size={22} />}
       <span className="text-[10px] tracking-wide whitespace-nowrap">{label}</span>
     </button>
@@ -19,7 +19,7 @@ export default function BottomNav() {
     <nav className="bg-white border-t border-slate-100 px-2 pt-2 pb-3 flex justify-around items-end shrink-0 z-40">
       <Item id="home" Icon={House} label="ホーム" />
       <Item id="nav" Icon={Navigation} label={t('院内案内', 'あんない')} />
-      <button className="flex-1 flex flex-col items-center -mt-7" onClick={() => d({ type: 'VIEW', view: 'card' })}>
+      <button data-tour="nav-card" className="flex-1 flex flex-col items-center -mt-7" onClick={() => d({ type: 'VIEW', view: 'card' })}>
         <div className="w-16 h-16 rounded-full bg-brand-600 text-white flex items-center justify-center shadow-lg shadow-brand-200 border-4 border-white transition-all active:scale-95">
           <ScanBarcode size={28} />
         </div>

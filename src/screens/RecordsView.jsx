@@ -177,6 +177,7 @@ export default function RecordsView() {
         ))}
       </div>
 
+      <div data-anchor="monshin">
       {s.monshin ? (
         <MonshinCard />
       ) : (
@@ -184,6 +185,7 @@ export default function RecordsView() {
           <Sparkles size={18} /> {t('記録をAIで問診票にまとめる', 'おいしゃさんへの メモを つくる')}
         </Btn>
       )}
+      </div>
 
       {!easy && (
         <Card className="flex items-start gap-3">

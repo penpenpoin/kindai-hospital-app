@@ -79,9 +79,10 @@ export function Btn({ children, tone = 'primary', className = '', ...rest }) {
 }
 
 // 審査員が自分で触るとき用の「出来事を起こす」ボタン（キーボードと同じ動き）
-export function Demo({ children, onClick }) {
+export function Demo({ children, onClick, tour }) {
   return (
     <button
+      data-tour={tour}
       onClick={onClick}
       className="w-full text-[11px] font-bold text-slate-400 border border-dashed border-slate-300 rounded-xl py-2 hover:text-brand-500 hover:border-brand-300"
     >

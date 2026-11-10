@@ -52,7 +52,7 @@ function StatusCard() {
       )
     else
       inner = (
-        <Row icon={<Users size={20} />} label={t('現在の待ち状況（タップで詳しく）', 'まっている人')} onClick={() => d({ type: 'VIEW', view: 'queue' })}>
+        <Row icon={<Users size={20} />} tour="queue-row" label={t('現在の待ち状況（タップで詳しく）', 'まっている人')} onClick={() => d({ type: 'VIEW', view: 'queue' })}>
           あと <span className="text-2xl">{s.queueAhead}</span> 人
           {s.waitPlace && <span className="block text-[11px] font-normal text-brand-100">{PLACES[s.waitPlace]}で待機中・呼ばれたら通知</span>}
         </Row>
@@ -88,9 +88,10 @@ function StatusCard() {
   )
 }
 
-function Row({ icon, label, children, onClick, pulse }) {
+function Row({ icon, label, children, onClick, pulse, tour }) {
   return (
     <button
+      data-tour={tour}
       onClick={onClick}
       disabled={!onClick}
       className={`w-full text-left bg-white/15 backdrop-blur-md rounded-2xl p-4 flex justify-between items-center border border-white/20 ${pulse ? 'animate-pulse' : ''}`}
@@ -255,7 +256,7 @@ function HeroCard() {
       </button>
       <div className="grid grid-cols-4 border-t border-slate-100 py-3">
         {ACTIONS.map((a) => (
-          <button key={a.view} onClick={() => d({ type: 'VIEW', view: a.view })} className="flex flex-col items-center gap-1.5 active:scale-95 transition-all">
+          <button key={a.view} data-tour={`act-${a.view}`} onClick={() => d({ type: 'VIEW', view: a.view })} className="flex flex-col items-center gap-1.5 active:scale-95 transition-all">
             <div className="w-12 h-12 rounded-full bg-brand-50 text-brand-600 flex items-center justify-center text-2xl">
               {a.emoji ?? <a.Icon size={22} />}
             </div>
@@ -285,7 +286,7 @@ function Services() {
         {SERVICES.map((x0) => {
           const x = s.flags.easy && x0.easyAlt ? { ...x0, ...x0.easyAlt } : x0
           return (
-          <button key={x.label[0]} onClick={() => tap(x)} className="flex flex-col items-center gap-1.5 active:scale-95 transition-all">
+          <button key={x.label[0]} data-tour={`svc-${x.view}`} onClick={() => tap(x)} className="flex flex-col items-center gap-1.5 active:scale-95 transition-all">
             <div className={`w-11 h-11 rounded-2xl bg-slate-50 flex items-center justify-center ${x.color}`}>
               {x.Icon === Wifi && s.wifi ? <Check size={20} className="text-emerald-500" /> : <x.Icon size={22} />}
             </div>
@@ -370,7 +371,7 @@ export default function HomeView() {
       {/* 審査員がタップで試せる「出来事」 */}
       <div className="space-y-2 pt-1">
         {s.scene === 'travel' && <Demo onClick={() => d({ type: 'ARRIVE' })}>病院に着く（A）</Demo>}
-        {s.scene === 'hospital' && open.length > 0 && <Demo onClick={() => d({ type: 'LEAVE' })}>検査を残したまま出口へ向かう（X）</Demo>}
+        {s.scene === 'hospital' && open.length > 0 && <Demo tour="demo-leave" onClick={() => d({ type: 'LEAVE' })}>検査を残したまま出口へ向かう（X）</Demo>}
         {s.scene === 'hospital' && s.checkedIn && !s.called && open[0]?.id === 'consult' && <Demo onClick={() => d({ type: 'CALL' })}>診察に呼ばれる（C）</Demo>}
         {s.scene === 'hospital' && s.called && <Demo onClick={() => d({ type: 'CONSULT_DONE' })}>診察が終わる（D）</Demo>}
       </div>

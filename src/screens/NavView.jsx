@@ -79,6 +79,7 @@ function WaitChooser() {
         {WAIT.map((w) => (
           <button
             key={w.id}
+            data-tour={`wait-${w.id}`}
             onClick={() => d({ type: 'WAIT_AT', place: w.id })}
             className={`w-full flex items-center gap-3 p-3 rounded-2xl border text-left transition-all ${s.waitPlace === w.id ? 'border-brand-400 bg-brand-50' : 'border-slate-100 bg-slate-50'}`}
           >

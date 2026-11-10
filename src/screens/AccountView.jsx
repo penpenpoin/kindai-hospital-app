@@ -64,7 +64,7 @@ export default function AccountView() {
       </Card>
 
       {/* ===== 家族連携 ===== */}
-      <div>
+      <div data-anchor="family">
         <div className="flex items-center justify-between px-1 mb-2">
           <p className="font-bold text-slate-800">{t('家族連携', 'かぞくと つながる')}</p>
           <span className="text-[11px] text-slate-400">{fam.length}人と連携中</span>

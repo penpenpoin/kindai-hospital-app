@@ -9,6 +9,7 @@ import LeaveAlert from './components/LeaveAlert.jsx'
 import DebugPanel from './components/DebugPanel.jsx'
 import HelpOverlay from './components/HelpOverlay.jsx'
 import GuideOverlay from './components/GuideOverlay.jsx'
+import { useTour, TourLayer } from './components/Tour.jsx'
 import NoticeCenter, { osSupported } from './components/NoticeCenter.jsx'
 import HomeView from './screens/HomeView.jsx'
 import NavView from './screens/NavView.jsx'
@@ -39,6 +40,12 @@ function speak(text) {
 
 export default function App() {
   const [s, d] = useReducer(reducer, undefined, init)
+  const sRef = useRef(s)
+  sRef.current = s // 自動操作から最新の状態を読むため
+  const phoneRef = useRef(null)
+  const tour = useTour({ d, sRef, phoneRef })
+  const tourStop = useRef(tour.stop)
+  tourStop.current = tour.stop
   const [showLog, setShowLog] = useState(() => window.innerWidth >= 1024)
   const [help, setHelp] = useState(false)
   const [guide, setGuide] = useState(false)
@@ -64,6 +71,7 @@ export default function App() {
       if (cmd.ui === 'close') {
         setHelp(false)
         setGuide(false)
+        tourStop.current()
       }
     }
     window.addEventListener('keydown', onKey)
@@ -143,7 +151,7 @@ export default function App() {
     <Sim.Provider value={{ s, d, t }}>
       <div className="min-h-screen lg:flex lg:items-start lg:justify-center lg:gap-6 lg:p-6">
         {/* ===== スマホ ===== */}
-        <div className="relative mx-auto lg:mx-0 w-full max-w-[430px] h-[100dvh] lg:h-[880px] lg:max-h-[calc(100vh-48px)] bg-slate-50 flex flex-col overflow-hidden shadow-2xl lg:rounded-[2.75rem] lg:border-[10px] lg:border-slate-900 shrink-0">
+        <div ref={phoneRef} className="relative mx-auto lg:mx-0 w-full max-w-[430px] h-[100dvh] lg:h-[880px] lg:max-h-[calc(100vh-48px)] bg-slate-50 flex flex-col overflow-hidden shadow-2xl lg:rounded-[2.75rem] lg:border-[10px] lg:border-slate-900 shrink-0">
           {/* シミュレーター用トップバー（デモ操作。スマホでも押せるようにボタンも置く） */}
           <div className="bg-slate-900 text-white text-[11px] flex items-center gap-1.5 px-2.5 py-1.5 shrink-0 z-50 whitespace-nowrap overflow-hidden">
             <button onClick={() => d({ type: 'PREV' })} className="px-1.5 rounded bg-white/10 hover:bg-white/20" title="← 戻る">‹</button>
@@ -157,6 +165,7 @@ export default function App() {
                 onClick={() => d({ type: 'TOGGLE', flag: 'easy' })}
                 className={`${easy ? 'text-yellow-400' : 'text-white/40'} font-bold uppercase`}
                 title="Y"
+                data-tour="easy"
               >
                 EASY
               </button>
@@ -175,7 +184,7 @@ export default function App() {
             </button>
             <div className="flex gap-1 items-center">
               {!s.flags.online && <span className="text-[10px] font-bold bg-slate-800 text-white px-2 py-0.5 rounded-full">オフライン</span>}
-              <button onClick={openBell} className={`p-2 hover:text-brand-600 relative ${bell ? 'text-brand-600' : 'text-slate-400'}`} aria-label={`お知らせ（未読 ${unread} 件）`}>
+              <button data-tour="bell" onClick={openBell} className={`p-2 hover:text-brand-600 relative ${bell ? 'text-brand-600' : 'text-slate-400'}`} aria-label={`お知らせ（未読 ${unread} 件）`}>
                 <Bell size={20} />
                 {unread > 0 && (
                   <span className="absolute top-0.5 right-0 min-w-[18px] h-[18px] px-1 bg-brand-600 text-white text-[10px] font-black rounded-full flex items-center justify-center">
@@ -184,6 +193,7 @@ export default function App() {
                 )}
               </button>
               <button
+                data-tour="account"
                 onClick={() => d({ type: 'VIEW', view: 'account' })}
                 className={`p-2 hover:text-brand-600 ${s.view === 'account' ? 'text-brand-600' : 'text-slate-400'}`}
                 aria-label="アカウント・家族連携"
@@ -201,13 +211,14 @@ export default function App() {
 
           <BottomNav />
           <LeaveAlert />
+          <TourLayer ui={tour.ui} onStop={tour.stop} onFast={tour.fast} />
           {bell && <NoticeCenter onClose={() => setBell(false)} />}
         </div>
 
         {/* ===== デバッグパネル ===== */}
         {showLog && <DebugPanel onClose={() => setShowLog(false)} onHelp={() => setHelp(true)} />}
         {help && <HelpOverlay onClose={() => setHelp(false)} />}
-        {guide && <GuideOverlay onClose={() => setGuide(false)} />}
+        {guide && <GuideOverlay onClose={() => setGuide(false)} onTour={(g, it) => tour.run(g, it)} />}
       </div>
     </Sim.Provider>
   )

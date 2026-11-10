@@ -146,6 +146,8 @@ export function createInitial(flags = DEFAULT_FLAGS) {
     notices: [],
     lastNotice: null,
     snsPosts: [],
+    drThanks: [],
+    medReviews: [],
     chat: [],
     alert: null, // { id, kind: 'leave', tasks: [...] }
     toast: null, // { id, text, tone }
@@ -380,6 +382,11 @@ function apply(s, a) {
       return
     }
 
+    case 'SET_FLAGS':
+      Object.assign(s.flags, a.flags)
+      log(s, SYS.debug, `デモ設定：${a.label}`, 'debug')
+      return
+
     case 'OS_NOTIFY':
       s.flags.osNotify = a.on
       log(s, SYS.push, a.on ? '端末の通知を許可：お知らせを端末の通知にも出す（ブラウザの通知機能）' : '端末への通知をオフ', 'debug')
@@ -568,6 +575,17 @@ function apply(s, a) {
       s.seq++
       s.snsPosts.unshift({ id: `p${s.seq}`, name: 'あなた（ニックネーム）', topic: a.topic, time: 'いま', text: a.text, r: { help: 0, me: 0, like: 0 } })
       log(s, SYS.ai, '院内SNS：投稿を確認（名前・電話番号などの個人情報、誤った医療情報がないか）→ 問題なしで公開')
+      return
+
+    case 'DR_THANKS':
+      s.drThanks.unshift({ dr: a.dr, tags: a.tags, text: a.text })
+      log(s, SYS.ai, `みんなの広場：${a.name}への「ありがとう」を確認（受診記録あり・個人情報なし）→ 公開。よかった点：${a.tags.join('・') || 'なし'}`)
+      send(s, SYS.rsv, `${a.name}に「ありがとうの声」を届ける（医師のやりがい・接遇の改善に）`)
+      return
+
+    case 'MED_REVIEW':
+      s.medReviews.unshift({ med: a.med, tags: a.tags, text: a.text })
+      log(s, SYS.ai, `みんなの広場：${a.name}の飲みやすさの声を確認（処方記録あり・効き目の断定なし）→ 公開`)
       return
 
     case 'RESEARCH':

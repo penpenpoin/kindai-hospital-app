@@ -92,6 +92,7 @@ export default function AIView() {
               <button
                 key={m.id}
                 disabled={off}
+                data-tour={`mode-${m.id}`}
                 onClick={() => d({ type: 'AVATAR', mode: m.id })}
                 className={`py-2 rounded-xl text-sm font-bold transition-all ${mode === m.id ? 'bg-white text-brand-600 shadow-sm' : 'text-slate-500'} disabled:opacity-35`}
               >
@@ -107,6 +108,7 @@ export default function AIView() {
               <button
                 key={a.id}
                 disabled={off}
+                data-tour={`who-${a.id}`}
                 onClick={() => d({ type: 'AVATAR', mode, who: a.id })}
                 className={`flex-1 py-2 rounded-2xl border font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-35 ${who === a.id ? 'border-brand-400 bg-brand-50 text-brand-700' : 'border-slate-100 bg-white text-slate-500'}`}
               >
@@ -168,9 +170,10 @@ export default function AIView() {
       )}
 
       <div className={`flex flex-wrap gap-2 ${easy ? 'grid grid-cols-1' : ''}`}>
-        {shown.map((f) => (
+        {shown.map((f, i) => (
           <button
             key={f.q}
+            data-tour={`faq-${i}`}
             onClick={() => ask(f)}
             className={`rounded-full bg-white border border-brand-100 text-brand-600 font-bold shadow-sm active:scale-95 ${easy ? 'px-4 py-3 text-base text-left rounded-2xl' : 'px-3 py-2 text-xs'}`}
           >

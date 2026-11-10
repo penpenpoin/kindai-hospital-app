@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { ShieldCheck, BadgeCheck, Send } from 'lucide-react'
 import { useSim } from '../sim/context.js'
 import { Page, Card } from '../components/ui.jsx'
+import Reviews from './Reviews.jsx'
 
 // 院内SNS「みんなの広場」：患者どうしの情報共有（ピアサポート）＋医療スタッフの発信。AI と職員が見守る。
 // 投稿はすべてデモ用の例。
@@ -74,17 +75,22 @@ export default function CommunityView() {
         <p>同じ病院に通う人どうしの情報交換の場です。AI と職員が見守り、名前や連絡先などはのせません。体のことの相談は主治医へ。</p>
       </div>
 
-      <div className="grid grid-cols-2 gap-1 p-1 bg-slate-100 rounded-2xl">
+      <div className="grid grid-cols-3 gap-1 p-1 bg-slate-100 rounded-2xl">
         {[
           ['all', 'みんなの投稿'],
-          ['staff', '病院スタッフから'],
+          ['staff', 'スタッフから'],
+          ['review', 'レビュー'],
         ].map(([k, label]) => (
-          <button key={k} onClick={() => setTab(k)} className={`py-2 rounded-xl text-sm font-bold ${tab === k ? 'bg-white text-brand-600 shadow-sm' : 'text-slate-500'}`}>
+          <button key={k} data-tour={`sns-${k}`} onClick={() => setTab(k)} className={`py-2 rounded-xl text-sm font-bold ${tab === k ? 'bg-white text-brand-600 shadow-sm' : 'text-slate-500'}`}>
             {label}
           </button>
         ))}
       </div>
 
+      {tab === 'review' ? (
+        <Reviews />
+      ) : (
+      <>
       <div className="flex gap-2 overflow-x-auto no-scrollbar -mx-5 px-5">
         {TOPICS.map((x) => (
           <button key={x} onClick={() => setTopic(x)} className={`px-3 py-1.5 rounded-full text-xs font-bold border whitespace-nowrap ${topic === x ? 'bg-slate-800 text-white border-slate-800' : 'bg-white text-slate-500 border-slate-200'}`}>
@@ -118,6 +124,8 @@ export default function CommunityView() {
         {posts.length === 0 && <p className="text-center text-sm text-slate-400 py-6">この話題の投稿はまだありません</p>}
       </div>
       <p className="text-[10px] text-slate-400 px-1">投稿はデモ用の例です。</p>
+      </>
+      )}
     </Page>
   )
 }
