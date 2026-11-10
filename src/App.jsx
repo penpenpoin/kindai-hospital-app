@@ -145,21 +145,20 @@ export default function App() {
         {/* ===== スマホ ===== */}
         <div className="relative mx-auto lg:mx-0 w-full max-w-[430px] h-[100dvh] lg:h-[880px] lg:max-h-[calc(100vh-48px)] bg-slate-50 flex flex-col overflow-hidden shadow-2xl lg:rounded-[2.75rem] lg:border-[10px] lg:border-slate-900 shrink-0">
           {/* シミュレーター用トップバー（デモ操作。スマホでも押せるようにボタンも置く） */}
-          <div className="bg-slate-900 text-white text-[11px] flex items-center gap-2 px-3 py-1.5 shrink-0 z-50">
-            <span className="font-bold opacity-50 tracking-tighter italic hidden sm:inline">Kindai Hosp. DX</span>
+          <div className="bg-slate-900 text-white text-[11px] flex items-center gap-1.5 px-2.5 py-1.5 shrink-0 z-50 whitespace-nowrap overflow-hidden">
             <button onClick={() => d({ type: 'PREV' })} className="px-1.5 rounded bg-white/10 hover:bg-white/20" title="← 戻る">‹</button>
             <span className="font-bold tabular-nums whitespace-nowrap" title={STEPS[s.step].label}>
               {s.step + 1}/{STEPS.length} {scene.label}
             </span>
             <button onClick={() => d({ type: 'NEXT' })} className="px-1.5 rounded bg-white/10 hover:bg-white/20" title="→ 進む">›</button>
-            <span className="opacity-60 tabular-nums">{s.clock}</span>
-            <div className="ml-auto flex items-center gap-2">
+            <span className="opacity-60 tabular-nums">{s.clock.replace('当日 ', '')}</span>
+            <div className="ml-auto flex items-center gap-2 shrink-0">
               <button
                 onClick={() => d({ type: 'TOGGLE', flag: 'easy' })}
                 className={`${easy ? 'text-yellow-400' : 'text-white/40'} font-bold uppercase`}
                 title="Y"
               >
-                Easy Mode
+                EASY
               </button>
               <button onClick={() => setShowLog((v) => !v)} className={`${showLog ? 'text-emerald-400' : 'text-white/40'} font-bold`} title="L">
                 LOG
